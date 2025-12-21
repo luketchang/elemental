@@ -2,20 +2,17 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dsuycoltwjpkw"
-path.s3tc="res://.godot/imported/basic_rock_0.png-f34f2a31f88119bf0ce24298b6216411.s3tc.ctex"
+uid="uid://610r5q0bhxjy"
+path.s3tc="res://.godot/imported/T_rocks_A_color.png-0cd683950ee44eb2dc09226b8f5e44e3.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
-generator_parameters={
-"md5": "70f351ecb3a839a678c488ed823e6c64"
-}
 
 [deps]
 
-source_file="res://assets/basic_rock_0.png"
-dest_files=["res://.godot/imported/basic_rock_0.png-f34f2a31f88119bf0ce24298b6216411.s3tc.ctex"]
+source_file="res://assets/textures/T_rocks_A_color.png"
+dest_files=["res://.godot/imported/T_rocks_A_color.png-0cd683950ee44eb2dc09226b8f5e44e3.s3tc.ctex"]
 
 [params]
 
