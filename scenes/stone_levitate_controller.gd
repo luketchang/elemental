@@ -3,7 +3,7 @@ extends Node3D
 ## Click anywhere to trigger the stone levitation animation
 
 @onready var anim_player: AnimationPlayer = $AnimationPlayer
-@onready var stone: MeshInstance3D = $stone
+@onready var stone: RigidBody3D = $stone
 @onready var debris: GPUParticles3D = $debris
 @onready var floor_collision: StaticBody3D = $floor/floor_collision
 @onready var debris_collider: GPUParticlesCollisionBox3D = $debris_collider
@@ -34,6 +34,10 @@ func _ready():
 			print("    Camera position: ", child.position)
 		if child is MeshInstance3D:
 			print("    Mesh: ", child.mesh != null)
+			print("    Position: ", child.position)
+		if child is RigidBody3D:
+			print("    RigidBody mass: ", child.mass)
+			print("    RigidBody freeze: ", child.freeze)
 			print("    Position: ", child.position)
 		if child is GPUParticlesCollisionBox3D:
 			print("    Collider size: ", child.size)
@@ -96,28 +100,43 @@ func _play_levitate():
 	if anim_player:
 		if not anim_player.is_playing():
 			print("▶ Playing levitate animation...")
-			print("  Stone start position: ", stone.position)
+			
+			# Reset stone physics state
+			if stone:
+				stone.freeze = true  # Start frozen
+				stone.linear_velocity = Vector3.ZERO
+				stone.angular_velocity = Vector3.ZERO
+				stone.position = Vector3(0, 0.3, 0)  # Start above floor, visible
+				stone.rotation = Vector3.ZERO
+				stone.visible = true  # Ensure visible
+				print("  Stone physics reset: pos=", stone.position, " freeze=", stone.freeze)
 			
 			# Reset particles for replay (one_shot needs manual restart)
 			if debris:
 				debris.restart()
+				debris.visible = true  # Reset visibility
 				print("  Debris particles restarted")
+			
+			# Reset smoke visibility
+			var smoke = get_node_or_null("smoke")
+			if smoke:
+				smoke.visible = true
 			
 			# Play animation
 			anim_player.play("levitate")
 			
-			# Monitor stone position during animation
+			# Monitor stone position and physics during animation
 			var timer = get_tree().create_timer(0.2)
 			timer.timeout.connect(func(): 
-				print("  Stone at t=0.2s: ", stone.position)
+				print("  Stone at t=0.2s: pos=", stone.position, " vel=", stone.linear_velocity, " freeze=", stone.freeze)
 			)
 			var timer2 = get_tree().create_timer(3.3)
 			timer2.timeout.connect(func(): 
-				print("  Stone at t=3.3s: ", stone.position)
+				print("  Stone at t=3.3s: pos=", stone.position, " vel=", stone.linear_velocity, " freeze=", stone.freeze)
 			)
 			var timer3 = get_tree().create_timer(3.6)
 			timer3.timeout.connect(func(): 
-				print("  Stone at t=3.6s (after fall): ", stone.position)
+				print("  Stone at t=3.6s (after fall): pos=", stone.position, " vel=", stone.linear_velocity, " freeze=", stone.freeze)
 			)
 		else:
 			print("Animation already playing...")

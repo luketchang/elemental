@@ -1,16 +1,24 @@
 @tool
 extends EditorScript
 
-## Stone Levitation VFX Generator
+## Stone Levitation VFX Generator (v6.0 - Physics-Based)
 ## Run this script from: File -> Run (or Ctrl+Shift+X)
 ## Generates: res://scenes/stone_levitate_vfx.tscn
+##
+## PHYSICS APPROACH:
+## - Stones are RigidBody3D nodes with collision shapes
+## - Launch: Upward impulse applied at t=0.0s
+## - Hover: Physics frozen at peak (t=0.2s-3.2s)
+## - Fall: Physics unfrozen at t=3.2s, natural bounce/roll on ground
+## - Stones have mass, bounce, friction for realistic behavior
 ##
 ## NOTE: EditorScript requires @tool but only runs when you explicitly execute it
 
 func _run():
 	
 	print("\n\n=== GENERATING STONE LEVITATION VFX SCENE ===")
-	print("🔧 GENERATOR VERSION: v5.1 - HIGHER DEBRIS")
+	print("🔧 GENERATOR VERSION: v6.0 - PHYSICS-BASED STONES")
+	print("Stones: RigidBody3D with impulse launch, freeze hover, physics fall")
 	print("Debris: 15 particles, vel 5-7 (higher), spread 20° (consistent), lifetime 2s")
 	print("If you don't see this version number, the script wasn't saved/reloaded!\n")
 	
@@ -25,8 +33,10 @@ func _run():
 		root.set_script(script)
 		# Add version metadata to the root node
 		var timestamp = Time.get_datetime_string_from_system()
-		root.set_meta("generator_version", "v5.1")
+		root.set_meta("generator_version", "v6.0")
 		root.set_meta("generated_at", timestamp)
+		root.set_meta("physics_enabled", "true")
+		root.set_meta("stone_type", "RigidBody3D")
 		root.set_meta("debris_velocity", "5-7")
 		root.set_meta("debris_spread", "20°")
 		root.set_meta("debris_amount", "15")
@@ -68,12 +78,15 @@ func _run():
 	world_boundary.owner = root
 	print("✓ World boundary collider added")
 	
-	# === STONE MESH ===
-	print("\nAdding stone mesh...")
-	var stone = _create_stone_mesh()
+	# === STONE RIGIDBODY ===
+	print("\nAdding stone rigidbody...")
+	var stone = _create_stone_rigidbody()
 	root.add_child(stone)
 	stone.owner = root
-	print("✓ Stone: ", stone.name, " at ", stone.position, " (mesh: ", stone.mesh != null, ")")
+	# Set owner for all children (mesh and collision)
+	for child in stone.get_children():
+		child.owner = root
+	print("✓ Stone: ", stone.name, " at ", stone.position, " (RigidBody3D with physics)")
 	
 	# === DEBRIS PARTICLES ===
 	print("\nAdding debris particles...")
@@ -174,6 +187,8 @@ func _create_floor() -> Node3D:
 	var floor_root = Node3D.new()
 	floor_root.name = "floor"
 	floor_root.position = Vector3(0, 0, 0)
+	# Slight slant to test physics rolling
+	floor_root.rotation_degrees = Vector3(0, 0, 5)  # 5 degree tilt on Z axis
 	
 	# Visual mesh
 	var floor_mesh = MeshInstance3D.new()
@@ -192,6 +207,10 @@ func _create_floor() -> Node3D:
 	# Physics body for collision
 	var body = StaticBody3D.new()
 	body.name = "floor_collision"
+	
+	# Set collision layers for proper interaction with stones
+	body.collision_layer = 1  # Layer 1
+	body.collision_mask = 1   # Collides with layer 1
 	
 	var collision = CollisionShape3D.new()
 	collision.name = "CollisionShape3D"
@@ -251,9 +270,22 @@ func _create_environment() -> WorldEnvironment:
 	return world_env
 
 
-func _create_stone_mesh() -> MeshInstance3D:
-	var stone = MeshInstance3D.new()
-	stone.name = "stone"
+func _create_stone_rigidbody() -> RigidBody3D:
+	var rigid_body = RigidBody3D.new()
+	rigid_body.name = "stone"
+	
+	# Configure physics properties
+	rigid_body.mass = 5.0  # Medium weight stone
+	rigid_body.physics_material_override = PhysicsMaterial.new()
+	rigid_body.physics_material_override.bounce = 0.3  # Some bounce
+	rigid_body.physics_material_override.friction = 0.8  # High friction for rolling
+	rigid_body.angular_damp = 2.0  # Slows rotation naturally
+	rigid_body.linear_damp = 0.1  # Slight air resistance
+	rigid_body.freeze = true  # Start frozen, will be unfrozen by animation
+	
+	# Set collision layers
+	rigid_body.collision_layer = 1  # Layer 1
+	rigid_body.collision_mask = 1   # Collides with layer 1
 	
 	print("  - Loading rock.glb...")
 	# Load the rock.glb (exported stoneB2)
@@ -266,7 +298,11 @@ func _create_stone_mesh() -> MeshInstance3D:
 		var stone_node = _find_first_mesh_instance(instance)
 		if stone_node:
 			print("  - ✓ Found mesh node: ", stone_node.name)
-			stone.mesh = stone_node.mesh
+			
+			# Create mesh child
+			var stone_mesh = MeshInstance3D.new()
+			stone_mesh.name = "mesh"
+			stone_mesh.mesh = stone_node.mesh
 			print("  - Mesh assigned, applying rocks_A texture material...")
 			
 			# Create material with rocks_A texture
@@ -279,18 +315,37 @@ func _create_stone_mesh() -> MeshInstance3D:
 			else:
 				rock_mat.albedo_color = Color(0.6, 0.5, 0.4, 1.0)  # Fallback brown
 				print("  - ! Could not load texture, using fallback color")
-			stone.set_surface_override_material(0, rock_mat)
+			stone_mesh.set_surface_override_material(0, rock_mat)
+			stone_mesh.scale = Vector3(0.8, 0.8, 0.8)  # Adjust scale as needed
+			
+			# Add mesh to rigid body
+			rigid_body.add_child(stone_mesh)
+			stone_mesh.owner = rigid_body
+			
+			# Create collision shape from mesh
+			var collision_shape = CollisionShape3D.new()
+			collision_shape.name = "CollisionShape3D"
+			
+			# Use a simple box shape for better physics performance
+			# Approximate the rock size
+			var box_shape = BoxShape3D.new()
+			box_shape.size = Vector3(0.6, 0.6, 0.6)  # Scaled to match mesh
+			collision_shape.shape = box_shape
+			
+			rigid_body.add_child(collision_shape)
+			collision_shape.owner = rigid_body
+			
+			print("  - ✓ Added collision shape (box)")
 		else:
 			push_warning("  - ✗ Could not find mesh in rock.glb")
 		instance.queue_free()
 	else:
 		push_error("  - ✗ Could not load rock.glb - check if file exists!")
 	
-	# Initial position (entirely below floor - animation lifts it up)
-	stone.position = Vector3(0, -0.8, 0)  # Start below floor (completely hidden)
-	stone.scale = Vector3(0.8, 0.8, 0.8)  # Adjust scale as needed
+	# Initial position (just above floor - will be launched by impulse)
+	rigid_body.position = Vector3(0, 0.3, 0)  # Start above floor, visible
 	
-	return stone
+	return rigid_body
 
 
 func _find_first_mesh_instance(node: Node) -> MeshInstance3D:
@@ -438,28 +493,38 @@ func _create_animation_player() -> AnimationPlayer:
 	var anim_player = AnimationPlayer.new()
 	anim_player.name = "AnimationPlayer"
 	
-	# Create the levitate animation
+	# Create the levitate animation with physics
 	# Timeline: 
-	#   0.0 - 0.2: Fast rise from ground
-	#   0.2 - 3.2: Hover in air (3 seconds)
-	#   3.2 - 3.4: Fall back down
-	#   3.4 - 5.4: Stay on ground, then disappear at 5.4
+	#   0.0: Unfreeze stone, apply upward impulse
+	#   0.2: Stone reaches peak, freeze physics (hover starts)
+	#   3.2: Hover ends, unfreeze physics (fall begins)
+	#   3.5: Stone hits ground, bounces naturally
+	#   5.5: Hide stone
 	var anim = Animation.new()
 	anim.length = 5.5
 	anim.loop_mode = Animation.LOOP_NONE
 	
-	# --- STONE POSITION TRACK ---
-	var stone_pos_track = anim.add_track(Animation.TYPE_VALUE)
-	anim.track_set_path(stone_pos_track, "stone:position")
-	anim.track_set_interpolation_type(stone_pos_track, Animation.INTERPOLATION_LINEAR)
+	# --- STONE FREEZE TRACK (controls physics on/off) ---
+	var stone_freeze_track = anim.add_track(Animation.TYPE_VALUE)
+	anim.track_set_path(stone_freeze_track, "stone:freeze")
+	anim.value_track_set_update_mode(stone_freeze_track, Animation.UPDATE_DISCRETE)
 	
-	# Fast rise, hover 3s, fall down (lands ON floor, not through it)
-	anim.track_insert_key(stone_pos_track, 0.0, Vector3(0, -0.8, 0))     # Start below floor (completely hidden)
-	anim.track_insert_key(stone_pos_track, 0.15, Vector3(0, 1.2, 0))     # Fast rise - higher now
-	anim.track_insert_key(stone_pos_track, 0.25, Vector3(0, 1.0, 0))     # Settle into hover
-	anim.track_insert_key(stone_pos_track, 3.25, Vector3(0, 1.0, 0))     # Hold hover for 3s
-	anim.track_insert_key(stone_pos_track, 3.5, Vector3(0, 0.25, 0))     # Fall back - lands ON floor (raised a bit more)
-	anim.track_insert_key(stone_pos_track, 5.5, Vector3(0, 0.25, 0))     # Stay on ground
+	anim.track_insert_key(stone_freeze_track, 0.0, false)   # Unfreeze for launch
+	anim.track_insert_key(stone_freeze_track, 0.2, true)    # Freeze at peak (hover)
+	anim.track_insert_key(stone_freeze_track, 3.2, false)   # Unfreeze for fall
+	
+	# --- STONE IMPULSE METHOD CALL TRACK ---
+	var stone_impulse_track = anim.add_track(Animation.TYPE_METHOD)
+	anim.track_set_path(stone_impulse_track, "stone")
+	
+	# Apply upward impulse at start (adjust force to reach desired height)
+	anim.track_insert_key(stone_impulse_track, 0.0, {
+		"method": "apply_central_impulse",
+		"args": [Vector3(0, 50.0, 0)]  # Strong upward impulse (mass=5, so need 50 for good height)
+	})
+	
+	# NOTE: Position is reset by controller script before animation plays
+	# Do NOT add a position track here - it would override physics!
 	
 	# --- STONE VISIBILITY TRACK (disappear 2s after landing) ---
 	var stone_vis_track = anim.add_track(Animation.TYPE_VALUE)
@@ -477,6 +542,14 @@ func _create_animation_player() -> AnimationPlayer:
 	anim.track_insert_key(debris_emit_track, 0.0, true)   # Instant burst on start
 	# one_shot=true handles stopping automatically
 	
+	# --- DEBRIS VISIBILITY TRACK (disappear when stone disappears) ---
+	var debris_vis_track = anim.add_track(Animation.TYPE_VALUE)
+	anim.track_set_path(debris_vis_track, "debris:visible")
+	anim.value_track_set_update_mode(debris_vis_track, Animation.UPDATE_DISCRETE)
+	
+	anim.track_insert_key(debris_vis_track, 0.0, true)
+	anim.track_insert_key(debris_vis_track, 5.5, false)   # Hide debris when stone disappears
+	
 	# --- SMOKE EMITTING TRACK (short dust puff at base) ---
 	var smoke_emit_track = anim.add_track(Animation.TYPE_VALUE)
 	anim.track_set_path(smoke_emit_track, "smoke:emitting")
@@ -484,6 +557,14 @@ func _create_animation_player() -> AnimationPlayer:
 	
 	anim.track_insert_key(smoke_emit_track, 0.0, true)    # Instant dust puff on lift
 	# one_shot=true handles stopping automatically
+	
+	# --- SMOKE VISIBILITY TRACK (disappear when stone disappears) ---
+	var smoke_vis_track = anim.add_track(Animation.TYPE_VALUE)
+	anim.track_set_path(smoke_vis_track, "smoke:visible")
+	anim.value_track_set_update_mode(smoke_vis_track, Animation.UPDATE_DISCRETE)
+	
+	anim.track_insert_key(smoke_vis_track, 0.0, true)
+	anim.track_insert_key(smoke_vis_track, 5.5, false)   # Hide smoke when stone disappears
 	
 	# Create animation library and add
 	var lib = AnimationLibrary.new()
