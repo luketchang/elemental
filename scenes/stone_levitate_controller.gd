@@ -9,8 +9,21 @@ extends Node3D
 @onready var debris_collider: GPUParticlesCollisionBox3D = $debris_collider
 
 func _ready():
-	print("\n=== STONE LEVITATE VFX READY ===")
-	print("Scene: ", name)
+	print("\n" + "=".repeat(60))
+	print("=== STONE LEVITATE VFX READY ===")
+	print("=".repeat(60))
+	print("\n🔧 RUNTIME VERSION CHECK:")
+	if has_meta("generator_version"):
+		print("  ✅ RUNNING NEW VERSION: ", get_meta("generator_version"))
+		print("  📅 Generated at: ", get_meta("generated_at"))
+		print("  ⚙️  Debris velocity: ", get_meta("debris_velocity"))
+		print("  ⚙️  Debris spread: ", get_meta("debris_spread"))
+		print("  ⚙️  Debris amount: ", get_meta("debris_amount"))
+	else:
+		print("  ❌❌❌ OLD VERSION - No metadata found!")
+		print("  ❌❌❌ YOU ARE RUNNING AN OLD SCENE FILE!")
+		print("  ❌❌❌ Delete scenes/stone_levitate_vfx.tscn and regenerate!")
+	print("\nScene: ", name)
 	print("Children count: ", get_child_count())
 	
 	# List all children
@@ -84,6 +97,13 @@ func _play_levitate():
 		if not anim_player.is_playing():
 			print("▶ Playing levitate animation...")
 			print("  Stone start position: ", stone.position)
+			
+			# Reset particles for replay (one_shot needs manual restart)
+			if debris:
+				debris.restart()
+				print("  Debris particles restarted")
+			
+			# Play animation
 			anim_player.play("levitate")
 			
 			# Monitor stone position during animation

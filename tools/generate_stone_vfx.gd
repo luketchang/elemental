@@ -2,12 +2,16 @@
 extends EditorScript
 
 ## Stone Levitation VFX Generator
-## Run this script from: Editor -> Run Script (or Ctrl+Shift+X)
+## Run this script from: File -> Run (or Ctrl+Shift+X)
 ## Generates: res://scenes/stone_levitate_vfx.tscn
+##
+## NOTE: EditorScript requires @tool but only runs when you explicitly execute it
 
 func _run():
+	
 	print("\n\n=== GENERATING STONE LEVITATION VFX SCENE ===")
-	print("🔧 GENERATOR VERSION: v6.0 - REMOVED RADIAL VELOCITY (vel 2-4, 20 particles)")
+	print("🔧 GENERATOR VERSION: v5.1 - HIGHER DEBRIS")
+	print("Debris: 15 particles, vel 5-7 (higher), spread 20° (consistent), lifetime 2s")
 	print("If you don't see this version number, the script wasn't saved/reloaded!\n")
 	
 	# Create root node
@@ -19,7 +23,15 @@ func _run():
 	var script = load("res://scenes/stone_levitate_controller.gd")
 	if script:
 		root.set_script(script)
-		print("✓ Attached controller script")
+		# Add version metadata to the root node
+		var timestamp = Time.get_datetime_string_from_system()
+		root.set_meta("generator_version", "v5.1")
+		root.set_meta("generated_at", timestamp)
+		root.set_meta("debris_velocity", "5-7")
+		root.set_meta("debris_spread", "20°")
+		root.set_meta("debris_amount", "15")
+		print("✓ Attached controller script with version metadata")
+		print("  Generated at: ", timestamp)
 	else:
 		push_warning("✗ Failed to load controller script")
 	
@@ -297,11 +309,11 @@ func _create_debris_particles() -> GPUParticles3D:
 	debris.position = Vector3(0, 0.2, 0)  # Slightly above ground (like earth-bending: 0.228366)
 	debris.emitting = false
 	debris.one_shot = true  # Quick burst, not continuous
-	debris.amount = 20  # Fewer particles for subtle effect
-	debris.lifetime = 1.5  # Short - quick spew then settle
+	debris.amount = 15  # Small amount for subtle effect
+	debris.lifetime = 2.0  # Short - quick spew then settle
 	debris.fixed_fps = 60
-	debris.explosiveness = 1.0  # All at once for clear burst
-	debris.visibility_aabb = AABB(Vector3(-10, -5, -10), Vector3(20, 20, 20))  # Larger bounds
+	debris.explosiveness = 1.0  # All at once
+	debris.visibility_aabb = AABB(Vector3(-5, -2, -5), Vector3(10, 5, 10))  # Reasonable bounds
 	
 	# Load debris mesh
 	var debris_mesh = load("res://assets/models/debris.obj") as Mesh
@@ -313,32 +325,41 @@ func _create_debris_particles() -> GPUParticles3D:
 	mat.albedo_color = Color(0.45, 0.35, 0.25, 1.0)
 	debris.material_override = mat
 	
-	# Process material - Low outward spew
+	# Process material - Consistent small pop
 	var process_mat = ParticleProcessMaterial.new()
 	process_mat.particle_flag_rotate_y = true
 	process_mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
-	process_mat.emission_sphere_radius = 0.3
+	process_mat.emission_sphere_radius = 0.2  # Tight spawn area
 	process_mat.angle_min = -180.0
 	process_mat.angle_max = 180.0
-	process_mat.direction = Vector3(0, 0.2, 0)  # Mostly horizontal, barely up
-	process_mat.spread = 70.0  # Wide spread - shoots outward
-	process_mat.initial_velocity_min = 2.0  # Very low velocity
-	process_mat.initial_velocity_max = 4.0  # Very low velocity
-	process_mat.gravity = Vector3(0, -33, 0)  # Strong gravity - falls quickly
+	process_mat.direction = Vector3(0, 1, 0)  # Straight up
+	process_mat.spread = 20.0  # TIGHT spread - consistent trajectories
+	process_mat.initial_velocity_min = 5.0  # Higher velocity for more height
+	process_mat.initial_velocity_max = 7.0  # Higher velocity for more height
+	process_mat.gravity = Vector3(0, -33, 0)  # Strong gravity - settles quickly
 	process_mat.scale_min = 0.3  # Match earth-bending
 	process_mat.scale_max = 1.0  # Match earth-bending
 	
-	# Scale curve - simple shrink over time
+	# Scale curve - Match earth-bending
 	var scale_curve = Curve.new()
-	scale_curve.add_point(Vector2(0.0, 1.0))
-	scale_curve.add_point(Vector2(1.0, 0.5))
+	scale_curve.add_point(Vector2(0.012474, 0.98856))
+	scale_curve.add_point(Vector2(0.754678, 0.98856))
+	scale_curve.add_point(Vector2(1.0, 0.0047518))
 	var scale_curve_tex = CurveTexture.new()
 	scale_curve_tex.curve = scale_curve
 	process_mat.scale_curve = scale_curve_tex
 	
-	# NO radial velocity - that was causing the rocketing
+	# Radial velocity curve - Match earth-bending
+	var radial_curve = Curve.new()
+	radial_curve.add_point(Vector2(0.012474, 0.98856))
+	radial_curve.add_point(Vector2(1.0, 0.000175953))
+	var radial_curve_tex = CurveTexture.new()
+	radial_curve_tex.curve = radial_curve
+	process_mat.radial_velocity_min = 0.999978
+	process_mat.radial_velocity_max = 1.99998
+	process_mat.radial_velocity_curve = radial_curve_tex
 	
-	# Collision with ground
+	# Collision with ground - EXACT match earth-bending
 	process_mat.collision_mode = ParticleProcessMaterial.COLLISION_RIGID
 	process_mat.collision_friction = 0.8  # Match earth-bending
 	process_mat.collision_bounce = 0.3  # Match earth-bending
