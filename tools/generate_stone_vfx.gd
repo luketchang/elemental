@@ -365,7 +365,7 @@ func _create_debris_particles() -> GPUParticles3D:
 	debris.emitting = false
 	debris.one_shot = true  # Quick burst, not continuous
 	debris.amount = 15  # Small amount for subtle effect
-	debris.lifetime = 2.0  # Short - quick spew then settle
+	debris.lifetime = 6.0  # Long enough to stay until stone disappears at 5.5s
 	debris.fixed_fps = 60
 	debris.explosiveness = 1.0  # All at once
 	debris.visibility_aabb = AABB(Vector3(-5, -2, -5), Vector3(10, 5, 10))  # Reasonable bounds
@@ -395,11 +395,11 @@ func _create_debris_particles() -> GPUParticles3D:
 	process_mat.scale_min = 0.3  # Match earth-bending
 	process_mat.scale_max = 1.0  # Match earth-bending
 	
-	# Scale curve - Match earth-bending
+	# Scale curve - Stay full size until near end
 	var scale_curve = Curve.new()
-	scale_curve.add_point(Vector2(0.012474, 0.98856))
-	scale_curve.add_point(Vector2(0.754678, 0.98856))
-	scale_curve.add_point(Vector2(1.0, 0.0047518))
+	scale_curve.add_point(Vector2(0.0, 1.0))       # Start full size
+	scale_curve.add_point(Vector2(0.9, 1.0))       # Stay full size until 90%
+	scale_curve.add_point(Vector2(1.0, 0.0))       # Shrink at very end
 	var scale_curve_tex = CurveTexture.new()
 	scale_curve_tex.curve = scale_curve
 	process_mat.scale_curve = scale_curve_tex

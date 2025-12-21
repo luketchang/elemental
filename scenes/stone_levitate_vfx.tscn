@@ -1,4 +1,4 @@
-[gd_scene load_steps=30 format=4 uid="uid://du0pvx5wba821"]
+[gd_scene load_steps=30 format=4 uid="uid://dfa1lbhsnrac5"]
 
 [ext_resource type="Script" uid="uid://dfy42gxrqjh1q" path="res://scenes/stone_levitate_controller.gd" id="1_hof0n"]
 [ext_resource type="Texture2D" uid="uid://610r5q0bhxjy" path="res://assets/textures/T_rocks_A_color.png" id="2_g2px6"]
@@ -76,7 +76,7 @@ point_count = 2
 curve = SubResource("Curve_1fdpy")
 
 [sub_resource type="Curve" id="Curve_g05lw"]
-_data = [Vector2(0.012474, 0.98856), 0.0, 0.0, 0, 0, Vector2(0.754678, 0.98856), 0.0, 0.0, 0, 0, Vector2(1, 0.0047518), 0.0, 0.0, 0, 0]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.9, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
 point_count = 3
 
 [sub_resource type="CurveTexture" id="CurveTexture_6mnvb"]
@@ -245,7 +245,7 @@ ambient_light_energy = 0.5
 [node name="StoneLevitateVFX" type="Node3D"]
 script = ExtResource("1_hof0n")
 metadata/generator_version = "v6.0"
-metadata/generated_at = "2025-12-20T21:35:31"
+metadata/generated_at = "2025-12-20T21:40:55"
 metadata/physics_enabled = "true"
 metadata/stone_type = "RigidBody3D"
 metadata/debris_velocity = "5-7"
@@ -298,7 +298,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
 material_override = SubResource("StandardMaterial3D_0x1hi")
 emitting = false
 amount = 15
-lifetime = 2.0
+lifetime = 6.0
 one_shot = true
 explosiveness = 1.0
 fixed_fps = 60
