@@ -1,15 +1,18 @@
-[gd_scene load_steps=25 format=4 uid="uid://bm2bydbkxeb1t"]
+[gd_scene load_steps=28 format=4 uid="uid://dprtbre8ekabk"]
 
-[ext_resource type="Script" uid="uid://dfy42gxrqjh1q" path="res://scenes/stone_levitate_controller.gd" id="1_4vili"]
-[ext_resource type="ArrayMesh" uid="uid://by2jiy3hn7h4q" path="res://assets/models/debris.obj" id="1_or08x"]
-[ext_resource type="Texture2D" uid="uid://d0fao3ruxmdbf" path="res://assets/textures/smoke.png" id="2_4vili"]
-[ext_resource type="Texture2D" uid="uid://610r5q0bhxjy" path="res://assets/textures/T_rocks_A_color.png" id="2_hof0n"]
+[ext_resource type="Script" uid="uid://dfy42gxrqjh1q" path="res://scenes/stone_levitate_controller.gd" id="1_hof0n"]
+[ext_resource type="Texture2D" uid="uid://610r5q0bhxjy" path="res://assets/textures/T_rocks_A_color.png" id="2_g2px6"]
+[ext_resource type="ArrayMesh" uid="uid://by2jiy3hn7h4q" path="res://assets/models/debris.obj" id="3_1ewxl"]
+[ext_resource type="Texture2D" uid="uid://d0fao3ruxmdbf" path="res://assets/textures/smoke.png" id="4_s3s0e"]
 
-[sub_resource type="PlaneMesh" id="PlaneMesh_hof0n"]
+[sub_resource type="PlaneMesh" id="PlaneMesh_k8gmc"]
 size = Vector2(10, 10)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_g2px6"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fr3i0"]
 albedo_color = Color(0.4, 0.3, 0.2, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_vq11f"]
+size = Vector3(10, 0.2, 10)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2hubc"]
 resource_name = "m_rocks"
@@ -51,62 +54,71 @@ _surfaces = [{
 blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_yjhaa")
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1ewxl"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bbp1l"]
 albedo_color = Color(0.9, 0.9, 0.9, 1)
-albedo_texture = ExtResource("2_hof0n")
+albedo_texture = ExtResource("2_g2px6")
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_s3s0e"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bg6pw"]
 albedo_color = Color(0.45, 0.35, 0.25, 1)
 
-[sub_resource type="Curve" id="Curve_k8gmc"]
-_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.7, 0.8), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+[sub_resource type="Curve" id="Curve_g4c1h"]
+_data = [Vector2(0.012474, 0.98856), 0.0, 0.0, 0, 0, Vector2(1, 0.000175953), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_0x1hi"]
+curve = SubResource("Curve_g4c1h")
+
+[sub_resource type="Curve" id="Curve_1fdpy"]
+_data = [Vector2(0.012474, 0.98856), 0.0, 0.0, 0, 0, Vector2(0.754678, 0.98856), 0.0, 0.0, 0, 0, Vector2(1, 0.0047518), 0.0, 0.0, 0, 0]
 point_count = 3
 
-[sub_resource type="CurveTexture" id="CurveTexture_fr3i0"]
-curve = SubResource("Curve_k8gmc")
+[sub_resource type="CurveTexture" id="CurveTexture_cwi3o"]
+curve = SubResource("Curve_1fdpy")
 
-[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_vq11f"]
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_g05lw"]
 particle_flag_rotate_y = true
 emission_shape = 1
-emission_sphere_radius = 0.2
+emission_sphere_radius = 0.5
 angle_min = -180.0
 angle_max = 180.0
-direction = Vector3(0, 0.3, 0)
-spread = 80.0
-initial_velocity_min = 3.0
-initial_velocity_max = 6.0
-gravity = Vector3(0, -15, 0)
-scale_min = 0.2
-scale_max = 0.5
-scale_curve = SubResource("CurveTexture_fr3i0")
+direction = Vector3(0, 1, 0)
+spread = 30.0
+initial_velocity_min = 15.0
+initial_velocity_max = 25.0
+radial_velocity_min = 0.999978
+radial_velocity_max = 1.99998
+radial_velocity_curve = SubResource("CurveTexture_0x1hi")
+gravity = Vector3(0, -20, 0)
+scale_min = 0.3
+scale_curve = SubResource("CurveTexture_cwi3o")
 collision_mode = 1
-collision_friction = 0.9
-collision_bounce = 0.1
+collision_friction = 0.8
+collision_bounce = 0.3
 collision_use_scale = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bbp1l"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6mnvb"]
 transparency = 1
 albedo_color = Color(0.55, 0.5, 0.42, 0.8)
-albedo_texture = ExtResource("2_4vili")
+albedo_texture = ExtResource("4_s3s0e")
 billboard_mode = 1
 proximity_fade_enabled = true
 proximity_fade_distance = 0.2
 
-[sub_resource type="Curve" id="Curve_bg6pw"]
+[sub_resource type="Curve" id="Curve_cby27"]
 _data = [Vector2(0, 0.8), 0.0, 0.0, 0, 0, Vector2(0.4, 0.6), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
 point_count = 3
 
-[sub_resource type="CurveTexture" id="CurveTexture_g4c1h"]
-curve = SubResource("Curve_bg6pw")
+[sub_resource type="CurveTexture" id="CurveTexture_vkvuc"]
+curve = SubResource("Curve_cby27")
 
-[sub_resource type="Curve" id="Curve_0x1hi"]
+[sub_resource type="Curve" id="Curve_d28sj"]
 _data = [Vector2(0, 0.3), 0.0, 0.0, 0, 0, Vector2(0.3, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.5), 0.0, 0.0, 0, 0]
 point_count = 3
 
-[sub_resource type="CurveTexture" id="CurveTexture_1fdpy"]
-curve = SubResource("Curve_0x1hi")
+[sub_resource type="CurveTexture" id="CurveTexture_a3rpv"]
+curve = SubResource("Curve_d28sj")
 
-[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_cwi3o"]
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_7gexl"]
 emission_shape = 1
 emission_sphere_radius = 0.3
 direction = Vector3(0, 0.2, 0)
@@ -116,25 +128,25 @@ initial_velocity_max = 1.5
 gravity = Vector3(0, -0.5, 0)
 damping_min = 2.0
 damping_max = 4.0
-scale_curve = SubResource("CurveTexture_1fdpy")
-alpha_curve = SubResource("CurveTexture_g4c1h")
+scale_curve = SubResource("CurveTexture_a3rpv")
+alpha_curve = SubResource("CurveTexture_vkvuc")
 
-[sub_resource type="QuadMesh" id="QuadMesh_g05lw"]
+[sub_resource type="QuadMesh" id="QuadMesh_pjao1"]
 size = Vector2(0.6, 0.6)
 
-[sub_resource type="Animation" id="Animation_6mnvb"]
+[sub_resource type="Animation" id="Animation_4quy3"]
 length = 5.5
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
 tracks/0/path = NodePath("stone:position")
-tracks/0/interp = 2
+tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
 "times": PackedFloat32Array(0, 0.15, 0.25, 3.25, 3.5, 5.5),
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1),
 "update": 0,
-"values": [Vector3(0, -0.5, 0), Vector3(0, 1.2, 0), Vector3(0, 1, 0), Vector3(0, 1, 0), Vector3(0, 0.1, 0), Vector3(0, 0.1, 0)]
+"values": [Vector3(0, -0.8, 0), Vector3(0, 1.2, 0), Vector3(0, 1, 0), Vector3(0, 1, 0), Vector3(0, 0.25, 0), Vector3(0, 0.25, 0)]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
@@ -173,12 +185,12 @@ tracks/3/keys = {
 "values": [true]
 }
 
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_cby27"]
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_jih1x"]
 _data = {
-&"levitate": SubResource("Animation_6mnvb")
+&"levitate": SubResource("Animation_4quy3")
 }
 
-[sub_resource type="Environment" id="Environment_vkvuc"]
+[sub_resource type="Environment" id="Environment_tpyna"]
 background_mode = 1
 background_color = Color(0.3, 0.3, 0.35, 1)
 ambient_light_source = 2
@@ -186,50 +198,64 @@ ambient_light_color = Color(0.4, 0.4, 0.45, 1)
 ambient_light_energy = 0.5
 
 [node name="StoneLevitateVFX" type="Node3D"]
-script = ExtResource("1_4vili")
+script = ExtResource("1_hof0n")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.707107, 0.5, -0.5, 0, 0.707107, 0.707107, 0.707107, -0.5, 0.5, 0, 0, 0)
 shadow_enabled = true
 
-[node name="floor" type="MeshInstance3D" parent="."]
-mesh = SubResource("PlaneMesh_hof0n")
-surface_material_override/0 = SubResource("StandardMaterial3D_g2px6")
+[node name="floor" type="Node3D" parent="."]
+
+[node name="floor_mesh" type="MeshInstance3D" parent="floor"]
+mesh = SubResource("PlaneMesh_k8gmc")
+surface_material_override/0 = SubResource("StandardMaterial3D_fr3i0")
+
+[node name="floor_collision" type="StaticBody3D" parent="floor"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="floor/floor_collision"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+shape = SubResource("BoxShape3D_vq11f")
 
 [node name="debris_collider" type="GPUParticlesCollisionBox3D" parent="."]
-size = Vector3(10, 0.2, 10)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
+size = Vector3(10, 2.5, 10)
+
+[node name="floor_particle_collision" type="GPUParticlesCollisionBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, 0)
+size = Vector3(12, 0.5, 12)
 
 [node name="stone" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 0, -0.5, 0)
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 0, -0.8, 0)
 mesh = SubResource("ArrayMesh_y2h1h")
-surface_material_override/0 = SubResource("StandardMaterial3D_1ewxl")
+surface_material_override/0 = SubResource("StandardMaterial3D_bbp1l")
 
 [node name="debris" type="GPUParticles3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
-material_override = SubResource("StandardMaterial3D_s3s0e")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+material_override = SubResource("StandardMaterial3D_bg6pw")
 emitting = false
-amount = 20
-lifetime = 1.5
+amount = 50
+lifetime = 8.0
 one_shot = true
 explosiveness = 1.0
 fixed_fps = 60
-process_material = SubResource("ParticleProcessMaterial_vq11f")
-draw_pass_1 = ExtResource("1_or08x")
+visibility_aabb = AABB(-10, -5, -10, 20, 20, 20)
+process_material = SubResource("ParticleProcessMaterial_g05lw")
+draw_pass_1 = ExtResource("3_1ewxl")
 
 [node name="smoke" type="GPUParticles3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
-material_override = SubResource("StandardMaterial3D_bbp1l")
+material_override = SubResource("StandardMaterial3D_6mnvb")
 emitting = false
 amount = 15
 lifetime = 0.6
 one_shot = true
 explosiveness = 1.0
-process_material = SubResource("ParticleProcessMaterial_cwi3o")
-draw_pass_1 = SubResource("QuadMesh_g05lw")
+process_material = SubResource("ParticleProcessMaterial_7gexl")
+draw_pass_1 = SubResource("QuadMesh_pjao1")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {
-&"": SubResource("AnimationLibrary_cby27")
+&"": SubResource("AnimationLibrary_jih1x")
 }
 
 [node name="Camera3D" type="Camera3D" parent="."]
@@ -237,4 +263,4 @@ transform = Transform3D(0.707107, -0.241845, 0.664463, 0, 0.939693, 0.34202, -0.
 current = true
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_vkvuc")
+environment = SubResource("Environment_tpyna")

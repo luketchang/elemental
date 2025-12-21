@@ -6,7 +6,9 @@ extends EditorScript
 ## Generates: res://scenes/stone_levitate_vfx.tscn
 
 func _run():
-	print("=== GENERATING STONE LEVITATION VFX SCENE ===")
+	print("\n\n=== GENERATING STONE LEVITATION VFX SCENE ===")
+	print("🔧 GENERATOR VERSION: v6.0 - REMOVED RADIAL VELOCITY (vel 2-4, 20 particles)")
+	print("If you don't see this version number, the script wasn't saved/reloaded!\n")
 	
 	# Create root node
 	var root = Node3D.new()
@@ -28,19 +30,31 @@ func _run():
 	light.owner = root
 	print("✓ Light: ", light.name, " at rotation ", light.rotation_degrees)
 	
-	# === FLOOR (visual ground) ===
+	# === FLOOR (visual ground + collision) ===
 	print("\nAdding floor...")
 	var floor = _create_floor()
 	root.add_child(floor)
 	floor.owner = root
-	print("✓ Floor: ", floor.name, " at ", floor.position)
+	# Set owner for all children (mesh and collision body)
+	for child in floor.get_children():
+		child.owner = root
+		for grandchild in child.get_children():
+			grandchild.owner = root
+	print("✓ Floor: ", floor.name, " at ", floor.position, " (with collision)")
 	
 	# === DEBRIS COLLISION BOX (makes debris bounce on floor) ===
 	print("\nAdding debris collider...")
 	var debris_collider = _create_debris_collider()
 	root.add_child(debris_collider)
 	debris_collider.owner = root
-	print("✓ Debris collider: ", debris_collider.name)
+	print("✓ Debris collider: ", debris_collider.name, " size=", debris_collider.size, " pos=", debris_collider.position)
+	
+	# === WORLD BOUNDARY (alternative collision for particles) ===
+	print("\nAdding world boundary collision...")
+	var world_boundary = _create_world_boundary()
+	root.add_child(world_boundary)
+	world_boundary.owner = root
+	print("✓ World boundary collider added")
 	
 	# === STONE MESH ===
 	print("\nAdding stone mesh...")
@@ -112,10 +126,12 @@ func _run():
 				for i in anim.get_track_count():
 					var path = anim.track_get_path(i)
 					var key_count = anim.track_get_key_count(i)
-					print("  Track ", i, ": ", path, " (", key_count, " keys)")
+					var interp = anim.track_get_interpolation_type(i)
+					print("  Track ", i, ": ", path, " (", key_count, " keys, interp=", interp, " 1=LINEAR 2=CUBIC)")
 					if key_count > 0 and "position" in str(path):
 						for k in key_count:
 							print("    Key ", k, ": t=", anim.track_get_key_time(i, k), " v=", anim.track_get_key_value(i, k))
+						print("  ⚠️ CHECK: Last key should be y=0.25, interp should be 1 (LINEAR)")
 		
 		var err = ResourceSaver.save(packed, save_path)
 		if err == OK:
@@ -141,29 +157,61 @@ func _create_light() -> DirectionalLight3D:
 	return light
 
 
-func _create_floor() -> MeshInstance3D:
-	var floor = MeshInstance3D.new()
-	floor.name = "floor"
+func _create_floor() -> Node3D:
+	# Create a container node for floor mesh + collision
+	var floor_root = Node3D.new()
+	floor_root.name = "floor"
+	floor_root.position = Vector3(0, 0, 0)
 	
+	# Visual mesh
+	var floor_mesh = MeshInstance3D.new()
+	floor_mesh.name = "floor_mesh"
 	var plane = PlaneMesh.new()
 	plane.size = Vector2(10, 10)
-	floor.mesh = plane
+	floor_mesh.mesh = plane
 	
 	# Floor material - earthy brown color
 	var mat = StandardMaterial3D.new()
 	mat.albedo_color = Color(0.4, 0.3, 0.2, 1.0)
-	floor.set_surface_override_material(0, mat)
+	floor_mesh.set_surface_override_material(0, mat)
 	
-	floor.position = Vector3(0, 0, 0)
-	return floor
+	floor_root.add_child(floor_mesh)
+	
+	# Physics body for collision
+	var body = StaticBody3D.new()
+	body.name = "floor_collision"
+	
+	var collision = CollisionShape3D.new()
+	collision.name = "CollisionShape3D"
+	var box = BoxShape3D.new()
+	box.size = Vector3(10, 0.2, 10)
+	collision.shape = box
+	collision.position = Vector3(0, -0.1, 0)  # Slightly below floor surface
+	
+	body.add_child(collision)
+	floor_root.add_child(body)
+	
+	return floor_root
 
 
 func _create_debris_collider() -> GPUParticlesCollisionBox3D:
-	# This invisible box makes debris particles collide with the "floor"
+	# EXACT copy from earth-bending collision setup
+	# Earth-bending: transform = (2.18088, 0, 0, 0, 1.03043, 0, 0, 0, 3.84031, 0, -1.06243, 2.719)
+	# Earth-bending: size = (3.87634, 2.45789, 3.45099)
 	var collider = GPUParticlesCollisionBox3D.new()
 	collider.name = "debris_collider"
-	collider.size = Vector3(10, 0.2, 10)  # Thin box at floor level
-	collider.position = Vector3(0, 0, 0)  # AT floor level (y=0)
+	collider.size = Vector3(10, 2.5, 10)  # Similar to earth-bending height: 2.45789
+	collider.position = Vector3(0, -1.0, 0)  # Position so TOP is slightly above y=0
+	# Top of box: -1.0 + 2.5/2 = 0.25 (slightly above floor)
+	return collider
+
+
+func _create_world_boundary() -> GPUParticlesCollisionBox3D:
+	# Additional collision box - sometimes particles need multiple colliders
+	var collider = GPUParticlesCollisionBox3D.new()
+	collider.name = "floor_particle_collision"
+	collider.size = Vector3(12, 0.5, 12)  # Larger, thinner
+	collider.position = Vector3(0, -0.25, 0)  # Top at y=0
 	return collider
 
 
@@ -227,7 +275,7 @@ func _create_stone_mesh() -> MeshInstance3D:
 		push_error("  - ✗ Could not load rock.glb - check if file exists!")
 	
 	# Initial position (entirely below floor - animation lifts it up)
-	stone.position = Vector3(0, -0.5, 0)  # Start below floor
+	stone.position = Vector3(0, -0.8, 0)  # Start below floor (completely hidden)
 	stone.scale = Vector3(0.8, 0.8, 0.8)  # Adjust scale as needed
 	
 	return stone
@@ -246,13 +294,14 @@ func _find_first_mesh_instance(node: Node) -> MeshInstance3D:
 func _create_debris_particles() -> GPUParticles3D:
 	var debris = GPUParticles3D.new()
 	debris.name = "debris"
-	debris.position = Vector3(0, 0.1, 0)  # At ground level
+	debris.position = Vector3(0, 0.2, 0)  # Slightly above ground (like earth-bending: 0.228366)
 	debris.emitting = false
 	debris.one_shot = true  # Quick burst, not continuous
-	debris.amount = 20  # Fewer particles for quick spew
-	debris.lifetime = 1.5  # Short lived
+	debris.amount = 20  # Fewer particles for subtle effect
+	debris.lifetime = 1.5  # Short - quick spew then settle
 	debris.fixed_fps = 60
-	debris.explosiveness = 1.0  # All at once - instant burst
+	debris.explosiveness = 1.0  # All at once for clear burst
+	debris.visibility_aabb = AABB(Vector3(-10, -5, -10), Vector3(20, 20, 20))  # Larger bounds
 	
 	# Load debris mesh
 	var debris_mesh = load("res://assets/models/debris.obj") as Mesh
@@ -264,34 +313,35 @@ func _create_debris_particles() -> GPUParticles3D:
 	mat.albedo_color = Color(0.45, 0.35, 0.25, 1.0)
 	debris.material_override = mat
 	
-	# Process material - quick outward burst
+	# Process material - Low outward spew
 	var process_mat = ParticleProcessMaterial.new()
 	process_mat.particle_flag_rotate_y = true
 	process_mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
-	process_mat.emission_sphere_radius = 0.2
+	process_mat.emission_sphere_radius = 0.3
 	process_mat.angle_min = -180.0
 	process_mat.angle_max = 180.0
-	process_mat.direction = Vector3(0, 0.3, 0)  # Mostly outward, slight up
-	process_mat.spread = 80.0  # Wide spread - shoots outward
-	process_mat.initial_velocity_min = 3.0
-	process_mat.initial_velocity_max = 6.0
-	process_mat.gravity = Vector3(0, -15, 0)
-	process_mat.scale_min = 0.2
-	process_mat.scale_max = 0.5
+	process_mat.direction = Vector3(0, 0.2, 0)  # Mostly horizontal, barely up
+	process_mat.spread = 70.0  # Wide spread - shoots outward
+	process_mat.initial_velocity_min = 2.0  # Very low velocity
+	process_mat.initial_velocity_max = 4.0  # Very low velocity
+	process_mat.gravity = Vector3(0, -33, 0)  # Strong gravity - falls quickly
+	process_mat.scale_min = 0.3  # Match earth-bending
+	process_mat.scale_max = 1.0  # Match earth-bending
 	
-	# Scale curve - shrink over time
+	# Scale curve - simple shrink over time
 	var scale_curve = Curve.new()
 	scale_curve.add_point(Vector2(0.0, 1.0))
-	scale_curve.add_point(Vector2(0.7, 0.8))
-	scale_curve.add_point(Vector2(1.0, 0.0))
+	scale_curve.add_point(Vector2(1.0, 0.5))
 	var scale_curve_tex = CurveTexture.new()
 	scale_curve_tex.curve = scale_curve
 	process_mat.scale_curve = scale_curve_tex
 	
+	# NO radial velocity - that was causing the rocketing
+	
 	# Collision with ground
 	process_mat.collision_mode = ParticleProcessMaterial.COLLISION_RIGID
-	process_mat.collision_friction = 0.9
-	process_mat.collision_bounce = 0.1
+	process_mat.collision_friction = 0.8  # Match earth-bending
+	process_mat.collision_bounce = 0.3  # Match earth-bending
 	process_mat.collision_use_scale = true
 	
 	debris.process_material = process_mat
@@ -380,15 +430,15 @@ func _create_animation_player() -> AnimationPlayer:
 	# --- STONE POSITION TRACK ---
 	var stone_pos_track = anim.add_track(Animation.TYPE_VALUE)
 	anim.track_set_path(stone_pos_track, "stone:position")
-	anim.track_set_interpolation_type(stone_pos_track, Animation.INTERPOLATION_CUBIC)
+	anim.track_set_interpolation_type(stone_pos_track, Animation.INTERPOLATION_LINEAR)
 	
 	# Fast rise, hover 3s, fall down (lands ON floor, not through it)
-	anim.track_insert_key(stone_pos_track, 0.0, Vector3(0, -0.5, 0))     # Start below floor
+	anim.track_insert_key(stone_pos_track, 0.0, Vector3(0, -0.8, 0))     # Start below floor (completely hidden)
 	anim.track_insert_key(stone_pos_track, 0.15, Vector3(0, 1.2, 0))     # Fast rise - higher now
 	anim.track_insert_key(stone_pos_track, 0.25, Vector3(0, 1.0, 0))     # Settle into hover
 	anim.track_insert_key(stone_pos_track, 3.25, Vector3(0, 1.0, 0))     # Hold hover for 3s
-	anim.track_insert_key(stone_pos_track, 3.5, Vector3(0, 0.1, 0))      # Fall back - lands ON floor (y=0.1 to sit on top)
-	anim.track_insert_key(stone_pos_track, 5.5, Vector3(0, 0.1, 0))      # Stay on ground
+	anim.track_insert_key(stone_pos_track, 3.5, Vector3(0, 0.25, 0))     # Fall back - lands ON floor (raised a bit more)
+	anim.track_insert_key(stone_pos_track, 5.5, Vector3(0, 0.25, 0))     # Stay on ground
 	
 	# --- STONE VISIBILITY TRACK (disappear 2s after landing) ---
 	var stone_vis_track = anim.add_track(Animation.TYPE_VALUE)
