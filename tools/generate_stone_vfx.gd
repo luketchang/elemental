@@ -162,8 +162,8 @@ func _create_debris_collider() -> GPUParticlesCollisionBox3D:
 	# This invisible box makes debris particles collide with the "floor"
 	var collider = GPUParticlesCollisionBox3D.new()
 	collider.name = "debris_collider"
-	collider.size = Vector3(10, 2, 10)
-	collider.position = Vector3(0, -1, 0)  # Below floor level
+	collider.size = Vector3(10, 0.2, 10)  # Thin box at floor level
+	collider.position = Vector3(0, 0, 0)  # AT floor level (y=0)
 	return collider
 
 
@@ -226,8 +226,8 @@ func _create_stone_mesh() -> MeshInstance3D:
 	else:
 		push_error("  - ✗ Could not load rock.glb - check if file exists!")
 	
-	# Initial position (at ground level - animation lifts it up)
-	stone.position = Vector3(0, 0, 0)
+	# Initial position (entirely below floor - animation lifts it up)
+	stone.position = Vector3(0, -0.5, 0)  # Start below floor
 	stone.scale = Vector3(0.8, 0.8, 0.8)  # Adjust scale as needed
 	
 	return stone
@@ -382,13 +382,13 @@ func _create_animation_player() -> AnimationPlayer:
 	anim.track_set_path(stone_pos_track, "stone:position")
 	anim.track_set_interpolation_type(stone_pos_track, Animation.INTERPOLATION_CUBIC)
 	
-	# Fast rise, hover 3s, fall down
-	anim.track_insert_key(stone_pos_track, 0.0, Vector3(0, 0, 0))        # Start at ground
+	# Fast rise, hover 3s, fall down (lands ON floor, not through it)
+	anim.track_insert_key(stone_pos_track, 0.0, Vector3(0, -0.5, 0))     # Start below floor
 	anim.track_insert_key(stone_pos_track, 0.15, Vector3(0, 1.2, 0))     # Fast rise - higher now
 	anim.track_insert_key(stone_pos_track, 0.25, Vector3(0, 1.0, 0))     # Settle into hover
 	anim.track_insert_key(stone_pos_track, 3.25, Vector3(0, 1.0, 0))     # Hold hover for 3s
-	anim.track_insert_key(stone_pos_track, 3.5, Vector3(0, 0, 0))        # Fall back to ground
-	anim.track_insert_key(stone_pos_track, 5.5, Vector3(0, 0, 0))        # Stay on ground
+	anim.track_insert_key(stone_pos_track, 3.5, Vector3(0, 0.1, 0))      # Fall back - lands ON floor (y=0.1 to sit on top)
+	anim.track_insert_key(stone_pos_track, 5.5, Vector3(0, 0.1, 0))      # Stay on ground
 	
 	# --- STONE VISIBILITY TRACK (disappear 2s after landing) ---
 	var stone_vis_track = anim.add_track(Animation.TYPE_VALUE)

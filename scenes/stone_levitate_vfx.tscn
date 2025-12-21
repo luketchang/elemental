@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=4 uid="uid://2ceqlfgcbpj5"]
+[gd_scene load_steps=25 format=4 uid="uid://bm2bydbkxeb1t"]
 
 [ext_resource type="Script" uid="uid://dfy42gxrqjh1q" path="res://scenes/stone_levitate_controller.gd" id="1_4vili"]
 [ext_resource type="ArrayMesh" uid="uid://by2jiy3hn7h4q" path="res://assets/models/debris.obj" id="1_or08x"]
@@ -134,7 +134,7 @@ tracks/0/keys = {
 "times": PackedFloat32Array(0, 0.15, 0.25, 3.25, 3.5, 5.5),
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1),
 "update": 0,
-"values": [Vector3(0, 0, 0), Vector3(0, 1.2, 0), Vector3(0, 1, 0), Vector3(0, 1, 0), Vector3(0, 0, 0), Vector3(0, 0, 0)]
+"values": [Vector3(0, -0.5, 0), Vector3(0, 1.2, 0), Vector3(0, 1, 0), Vector3(0, 1, 0), Vector3(0, 0.1, 0), Vector3(0, 0.1, 0)]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
@@ -197,11 +197,10 @@ mesh = SubResource("PlaneMesh_hof0n")
 surface_material_override/0 = SubResource("StandardMaterial3D_g2px6")
 
 [node name="debris_collider" type="GPUParticlesCollisionBox3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
-size = Vector3(10, 2, 10)
+size = Vector3(10, 0.2, 10)
 
 [node name="stone" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 0, 0, 0)
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 0, -0.5, 0)
 mesh = SubResource("ArrayMesh_y2h1h")
 surface_material_override/0 = SubResource("StandardMaterial3D_1ewxl")
 
