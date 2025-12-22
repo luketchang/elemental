@@ -187,14 +187,13 @@ func _create_floor() -> Node3D:
 	var floor_root = Node3D.new()
 	floor_root.name = "floor"
 	floor_root.position = Vector3(0, 0, 0)
-	# Slight slant to test physics rolling
-	floor_root.rotation_degrees = Vector3(0, 0, 5)  # 5 degree tilt on Z axis
+	# No slant - flat floor for proper physics
 	
 	# Visual mesh
 	var floor_mesh = MeshInstance3D.new()
 	floor_mesh.name = "floor_mesh"
 	var plane = PlaneMesh.new()
-	plane.size = Vector2(10, 10)
+	plane.size = Vector2(100, 100)  # HUGE floor for rock shooting
 	floor_mesh.mesh = plane
 	
 	# Floor material - earthy brown color
@@ -215,7 +214,7 @@ func _create_floor() -> Node3D:
 	var collision = CollisionShape3D.new()
 	collision.name = "CollisionShape3D"
 	var box = BoxShape3D.new()
-	box.size = Vector3(10, 0.2, 10)
+	box.size = Vector3(100, 0.2, 100)  # HUGE floor
 	collision.shape = box
 	collision.position = Vector3(0, -0.1, 0)  # Slightly below floor surface
 	
@@ -226,32 +225,29 @@ func _create_floor() -> Node3D:
 
 
 func _create_debris_collider() -> GPUParticlesCollisionBox3D:
-	# EXACT copy from earth-bending collision setup
-	# Earth-bending: transform = (2.18088, 0, 0, 0, 1.03043, 0, 0, 0, 3.84031, 0, -1.06243, 2.719)
-	# Earth-bending: size = (3.87634, 2.45789, 3.45099)
+	# Particle collision box - HUGE for rock shooting anywhere
 	var collider = GPUParticlesCollisionBox3D.new()
 	collider.name = "debris_collider"
-	collider.size = Vector3(10, 2.5, 10)  # Similar to earth-bending height: 2.45789
-	collider.position = Vector3(0, -1.0, 0)  # Position so TOP is slightly above y=0
-	# Top of box: -1.0 + 2.5/2 = 0.25 (slightly above floor)
+	collider.size = Vector3(100, 2.5, 100)  # Match floor size
+	collider.position = Vector3(0, -1.0, 0)
 	return collider
 
 
 func _create_world_boundary() -> GPUParticlesCollisionBox3D:
-	# Additional collision box - sometimes particles need multiple colliders
+	# Additional collision box for particles
 	var collider = GPUParticlesCollisionBox3D.new()
 	collider.name = "floor_particle_collision"
-	collider.size = Vector3(12, 0.5, 12)  # Larger, thinner
-	collider.position = Vector3(0, -0.25, 0)  # Top at y=0
+	collider.size = Vector3(100, 0.5, 100)  # Match floor size
+	collider.position = Vector3(0, -0.25, 0)
 	return collider
 
 
 func _create_camera() -> Camera3D:
 	var camera = Camera3D.new()
 	camera.name = "Camera3D"
-	camera.position = Vector3(3, 2, 3)
-	camera.rotation_degrees = Vector3(-20, 45, 0)
-	camera.current = true  # Make this the active camera
+	camera.position = Vector3(8, 8, 12)  # Higher and further back for huge floor
+	camera.rotation_degrees = Vector3(-30, 30, 0)  # Looking down more
+	camera.current = true
 	return camera
 
 
