@@ -116,6 +116,16 @@ func _run():
 	camera.owner = root
 	print("✓ Camera: ", camera.name, " at ", camera.position, " (current: ", camera.current, ")")
 	
+	# === WALLS (randomly placed obstacles for shatter effect) ===
+	print("\nAdding walls...")
+	var walls = _create_walls()
+	for wall in walls:
+		root.add_child(wall)
+		wall.owner = root
+		for child in wall.get_children():
+			child.owner = root
+	print("✓ Walls: ", walls.size(), " walls placed randomly")
+	
 	# === WORLD ENVIRONMENT (background, not just void) ===
 	print("\nAdding environment...")
 	var env = _create_environment()
@@ -279,9 +289,13 @@ func _create_stone_rigidbody() -> RigidBody3D:
 	rigid_body.linear_damp = 0.1  # Slight air resistance
 	rigid_body.freeze = true  # Start frozen, will be unfrozen by animation
 	
+	# Enable contact monitoring for wall collision detection
+	rigid_body.contact_monitor = true
+	rigid_body.max_contacts_reported = 4
+	
 	# Set collision layers
 	rigid_body.collision_layer = 1  # Layer 1
-	rigid_body.collision_mask = 1   # Collides with layer 1
+	rigid_body.collision_mask = 3   # Collides with layer 1 (floor) and layer 2 (walls)
 	
 	print("  - Loading rock.glb...")
 	# Load the rock.glb (exported stoneB2)
@@ -571,3 +585,67 @@ func _create_animation_player() -> AnimationPlayer:
 	# anim_player.autoplay = "levitate"
 	
 	return anim_player
+
+
+func _create_walls() -> Array[StaticBody3D]:
+	var walls: Array[StaticBody3D] = []
+	var wall_count = 8  # More walls
+	
+	# Wall dimensions - BIG walls
+	var wall_height = 4.0
+	var wall_width = 8.0
+	var wall_depth = 1.0
+	
+	# Place walls closer to center so they're easy to hit
+	var min_distance = 10.0
+	var max_distance = 25.0
+	
+	for i in wall_count:
+		var wall = StaticBody3D.new()
+		wall.name = "wall_%d" % i
+		
+		# Evenly spaced around center with slight randomness
+		var base_angle = (float(i) / wall_count) * TAU
+		var angle = base_angle + randf_range(-0.2, 0.2)
+		var distance = randf_range(min_distance, max_distance)
+		var pos_x = cos(angle) * distance
+		var pos_z = sin(angle) * distance
+		
+		wall.position = Vector3(pos_x, wall_height / 2.0, pos_z)
+		
+		# Face toward center (perpendicular to radius) with slight variation
+		wall.rotation_degrees.y = rad_to_deg(angle) + 90 + randf_range(-20, 20)
+		
+		# Collision layer 2 (separate from floor layer 1)
+		wall.collision_layer = 2
+		wall.collision_mask = 1  # Collides with rocks on layer 1
+		
+		# Add to "walls" group for easy detection
+		wall.add_to_group("walls")
+		
+		# Visual mesh
+		var mesh_instance = MeshInstance3D.new()
+		mesh_instance.name = "mesh"
+		var box_mesh = BoxMesh.new()
+		box_mesh.size = Vector3(wall_width, wall_height, wall_depth)
+		mesh_instance.mesh = box_mesh
+		
+		# Wall material - reddish brick color to stand out
+		var mat = StandardMaterial3D.new()
+		mat.albedo_color = Color(0.6, 0.3, 0.25, 1.0)  # Reddish-brown brick
+		mesh_instance.set_surface_override_material(0, mat)
+		
+		wall.add_child(mesh_instance)
+		
+		# Collision shape
+		var collision = CollisionShape3D.new()
+		collision.name = "CollisionShape3D"
+		var box_shape = BoxShape3D.new()
+		box_shape.size = Vector3(wall_width, wall_height, wall_depth)
+		collision.shape = box_shape
+		
+		wall.add_child(collision)
+		
+		walls.append(wall)
+	
+	return walls

@@ -1,20 +1,20 @@
-[gd_scene load_steps=30 format=4 uid="uid://caheo20msby3l"]
+[gd_scene load_steps=54 format=4 uid="uid://bx0tbh3565sf5"]
 
 [ext_resource type="Script" uid="uid://dfy42gxrqjh1q" path="res://scenes/stone_levitate_controller.gd" id="1_hof0n"]
 [ext_resource type="Texture2D" uid="uid://610r5q0bhxjy" path="res://assets/textures/T_rocks_A_color.png" id="2_g2px6"]
 [ext_resource type="ArrayMesh" uid="uid://by2jiy3hn7h4q" path="res://assets/models/debris.obj" id="3_1ewxl"]
 [ext_resource type="Texture2D" uid="uid://d0fao3ruxmdbf" path="res://assets/textures/smoke.png" id="4_s3s0e"]
 
-[sub_resource type="PlaneMesh" id="PlaneMesh_k8gmc"]
+[sub_resource type="PlaneMesh" id="PlaneMesh_hof0n"]
 size = Vector2(100, 100)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fr3i0"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_g2px6"]
 albedo_color = Color(0.4, 0.3, 0.2, 1)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_vq11f"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_1ewxl"]
 size = Vector3(100, 0.2, 100)
 
-[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_bbp1l"]
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_s3s0e"]
 friction = 0.8
 bounce = 0.3
 
@@ -58,31 +58,31 @@ _surfaces = [{
 blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_yjhaa")
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bg6pw"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_k8gmc"]
 albedo_color = Color(0.9, 0.9, 0.9, 1)
 albedo_texture = ExtResource("2_g2px6")
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_g4c1h"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_fr3i0"]
 size = Vector3(0.6, 0.6, 0.6)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0x1hi"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vq11f"]
 albedo_color = Color(0.45, 0.35, 0.25, 1)
 
-[sub_resource type="Curve" id="Curve_1fdpy"]
+[sub_resource type="Curve" id="Curve_bbp1l"]
 _data = [Vector2(0.012474, 0.98856), 0.0, 0.0, 0, 0, Vector2(1, 0.000175953), 0.0, 0.0, 0, 0]
 point_count = 2
 
-[sub_resource type="CurveTexture" id="CurveTexture_cwi3o"]
-curve = SubResource("Curve_1fdpy")
+[sub_resource type="CurveTexture" id="CurveTexture_bg6pw"]
+curve = SubResource("Curve_bbp1l")
 
-[sub_resource type="Curve" id="Curve_g05lw"]
+[sub_resource type="Curve" id="Curve_g4c1h"]
 _data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.9, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
 point_count = 3
 
-[sub_resource type="CurveTexture" id="CurveTexture_6mnvb"]
-curve = SubResource("Curve_g05lw")
+[sub_resource type="CurveTexture" id="CurveTexture_0x1hi"]
+curve = SubResource("Curve_g4c1h")
 
-[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_cby27"]
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_1fdpy"]
 particle_flag_rotate_y = true
 emission_shape = 1
 emission_sphere_radius = 0.2
@@ -94,16 +94,16 @@ initial_velocity_min = 5.0
 initial_velocity_max = 7.0
 radial_velocity_min = 0.999978
 radial_velocity_max = 1.99998
-radial_velocity_curve = SubResource("CurveTexture_cwi3o")
+radial_velocity_curve = SubResource("CurveTexture_bg6pw")
 gravity = Vector3(0, -33, 0)
 scale_min = 0.3
-scale_curve = SubResource("CurveTexture_6mnvb")
+scale_curve = SubResource("CurveTexture_0x1hi")
 collision_mode = 1
 collision_friction = 0.8
 collision_bounce = 0.3
 collision_use_scale = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vkvuc"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cwi3o"]
 transparency = 1
 albedo_color = Color(0.55, 0.5, 0.42, 0.8)
 albedo_texture = ExtResource("4_s3s0e")
@@ -111,21 +111,21 @@ billboard_mode = 1
 proximity_fade_enabled = true
 proximity_fade_distance = 0.2
 
-[sub_resource type="Curve" id="Curve_d28sj"]
+[sub_resource type="Curve" id="Curve_g05lw"]
 _data = [Vector2(0, 0.8), 0.0, 0.0, 0, 0, Vector2(0.4, 0.6), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
 point_count = 3
 
-[sub_resource type="CurveTexture" id="CurveTexture_a3rpv"]
-curve = SubResource("Curve_d28sj")
+[sub_resource type="CurveTexture" id="CurveTexture_6mnvb"]
+curve = SubResource("Curve_g05lw")
 
-[sub_resource type="Curve" id="Curve_7gexl"]
+[sub_resource type="Curve" id="Curve_cby27"]
 _data = [Vector2(0, 0.3), 0.0, 0.0, 0, 0, Vector2(0.3, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.5), 0.0, 0.0, 0, 0]
 point_count = 3
 
-[sub_resource type="CurveTexture" id="CurveTexture_pjao1"]
-curve = SubResource("Curve_7gexl")
+[sub_resource type="CurveTexture" id="CurveTexture_vkvuc"]
+curve = SubResource("Curve_cby27")
 
-[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_4quy3"]
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_d28sj"]
 emission_shape = 1
 emission_sphere_radius = 0.3
 direction = Vector3(0, 0.2, 0)
@@ -135,13 +135,13 @@ initial_velocity_max = 1.5
 gravity = Vector3(0, -0.5, 0)
 damping_min = 2.0
 damping_max = 4.0
-scale_curve = SubResource("CurveTexture_pjao1")
-alpha_curve = SubResource("CurveTexture_a3rpv")
+scale_curve = SubResource("CurveTexture_vkvuc")
+alpha_curve = SubResource("CurveTexture_6mnvb")
 
-[sub_resource type="QuadMesh" id="QuadMesh_jih1x"]
+[sub_resource type="QuadMesh" id="QuadMesh_a3rpv"]
 size = Vector2(0.6, 0.6)
 
-[sub_resource type="Animation" id="Animation_tpyna"]
+[sub_resource type="Animation" id="Animation_7gexl"]
 length = 5.5
 tracks/0/type = "value"
 tracks/0/imported = false
@@ -230,12 +230,84 @@ tracks/6/keys = {
 "values": [true, false]
 }
 
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_hy06r"]
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_pjao1"]
 _data = {
-&"levitate": SubResource("Animation_tpyna")
+&"levitate": SubResource("Animation_7gexl")
 }
 
-[sub_resource type="Environment" id="Environment_lg0d6"]
+[sub_resource type="BoxMesh" id="BoxMesh_4quy3"]
+size = Vector3(8, 4, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jih1x"]
+albedo_color = Color(0.6, 0.3, 0.25, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_tpyna"]
+size = Vector3(8, 4, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_hy06r"]
+size = Vector3(8, 4, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lg0d6"]
+albedo_color = Color(0.6, 0.3, 0.25, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_vhmo4"]
+size = Vector3(8, 4, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_xx3k3"]
+size = Vector3(8, 4, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_j8ay2"]
+albedo_color = Color(0.6, 0.3, 0.25, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_t43o2"]
+size = Vector3(8, 4, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ici4d"]
+size = Vector3(8, 4, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_eyen2"]
+albedo_color = Color(0.6, 0.3, 0.25, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_w8erk"]
+size = Vector3(8, 4, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_yxhvm"]
+size = Vector3(8, 4, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1vfg3"]
+albedo_color = Color(0.6, 0.3, 0.25, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_f1an2"]
+size = Vector3(8, 4, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_xe14v"]
+size = Vector3(8, 4, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xgml4"]
+albedo_color = Color(0.6, 0.3, 0.25, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_qrb6s"]
+size = Vector3(8, 4, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_72rx1"]
+size = Vector3(8, 4, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_llmhn"]
+albedo_color = Color(0.6, 0.3, 0.25, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_e72x8"]
+size = Vector3(8, 4, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_6m5ht"]
+size = Vector3(8, 4, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_li24i"]
+albedo_color = Color(0.6, 0.3, 0.25, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_gb3lj"]
+size = Vector3(8, 4, 1)
+
+[sub_resource type="Environment" id="Environment_2rcph"]
 background_mode = 1
 background_color = Color(0.3, 0.3, 0.35, 1)
 ambient_light_source = 2
@@ -245,7 +317,7 @@ ambient_light_energy = 0.5
 [node name="StoneLevitateVFX" type="Node3D"]
 script = ExtResource("1_hof0n")
 metadata/generator_version = "v6.0"
-metadata/generated_at = "2025-12-21T21:16:07"
+metadata/generated_at = "2025-12-23T23:34:59"
 metadata/physics_enabled = "true"
 metadata/stone_type = "RigidBody3D"
 metadata/debris_velocity = "5-7"
@@ -259,14 +331,14 @@ shadow_enabled = true
 [node name="floor" type="Node3D" parent="."]
 
 [node name="floor_mesh" type="MeshInstance3D" parent="floor"]
-mesh = SubResource("PlaneMesh_k8gmc")
-surface_material_override/0 = SubResource("StandardMaterial3D_fr3i0")
+mesh = SubResource("PlaneMesh_hof0n")
+surface_material_override/0 = SubResource("StandardMaterial3D_g2px6")
 
 [node name="floor_collision" type="StaticBody3D" parent="floor"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="floor/floor_collision"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
-shape = SubResource("BoxShape3D_vq11f")
+shape = SubResource("BoxShape3D_1ewxl")
 
 [node name="debris_collider" type="GPUParticlesCollisionBox3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
@@ -278,23 +350,26 @@ size = Vector3(100, 0.5, 100)
 
 [node name="stone" type="RigidBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+collision_mask = 3
 mass = 5.0
-physics_material_override = SubResource("PhysicsMaterial_bbp1l")
+physics_material_override = SubResource("PhysicsMaterial_s3s0e")
 freeze = true
+contact_monitor = true
+max_contacts_reported = 4
 linear_damp = 0.1
 angular_damp = 2.0
 
 [node name="mesh" type="MeshInstance3D" parent="stone"]
 transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 0, 0, 0)
 mesh = SubResource("ArrayMesh_y2h1h")
-surface_material_override/0 = SubResource("StandardMaterial3D_bg6pw")
+surface_material_override/0 = SubResource("StandardMaterial3D_k8gmc")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="stone"]
-shape = SubResource("BoxShape3D_g4c1h")
+shape = SubResource("BoxShape3D_fr3i0")
 
 [node name="debris" type="GPUParticles3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
-material_override = SubResource("StandardMaterial3D_0x1hi")
+material_override = SubResource("StandardMaterial3D_vq11f")
 emitting = false
 amount = 15
 lifetime = 6.0
@@ -302,28 +377,116 @@ one_shot = true
 explosiveness = 1.0
 fixed_fps = 60
 visibility_aabb = AABB(-5, -2, -5, 10, 5, 10)
-process_material = SubResource("ParticleProcessMaterial_cby27")
+process_material = SubResource("ParticleProcessMaterial_1fdpy")
 draw_pass_1 = ExtResource("3_1ewxl")
 
 [node name="smoke" type="GPUParticles3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
-material_override = SubResource("StandardMaterial3D_vkvuc")
+material_override = SubResource("StandardMaterial3D_cwi3o")
 emitting = false
 amount = 15
 lifetime = 0.6
 one_shot = true
 explosiveness = 1.0
-process_material = SubResource("ParticleProcessMaterial_4quy3")
-draw_pass_1 = SubResource("QuadMesh_jih1x")
+process_material = SubResource("ParticleProcessMaterial_d28sj")
+draw_pass_1 = SubResource("QuadMesh_a3rpv")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {
-&"": SubResource("AnimationLibrary_hy06r")
+&"": SubResource("AnimationLibrary_pjao1")
 }
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(0.866025, -0.25, 0.433013, 0, 0.866025, 0.5, -0.5, -0.433013, 0.75, 8, 8, 12)
 current = true
 
+[node name="wall_0" type="StaticBody3D" parent="."]
+transform = Transform3D(-0.340024, 0, 0.940417, 0, 1, 0, -0.940417, 0, -0.340024, 12.5911, 2, 0.102182)
+collision_layer = 2
+
+[node name="mesh" type="MeshInstance3D" parent="wall_0"]
+mesh = SubResource("BoxMesh_4quy3")
+surface_material_override/0 = SubResource("StandardMaterial3D_jih1x")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="wall_0"]
+shape = SubResource("BoxShape3D_tpyna")
+
+[node name="wall_1" type="StaticBody3D" parent="."]
+transform = Transform3D(-0.770699, 0, 0.6372, 0, 1, 0, -0.6372, 0, -0.770699, 7.20108, 2, 8.88153)
+collision_layer = 2
+
+[node name="mesh" type="MeshInstance3D" parent="wall_1"]
+mesh = SubResource("BoxMesh_hy06r")
+surface_material_override/0 = SubResource("StandardMaterial3D_lg0d6")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="wall_1"]
+shape = SubResource("BoxShape3D_vhmo4")
+
+[node name="wall_2" type="StaticBody3D" parent="."]
+transform = Transform3D(-0.999901, 0, 0.0140421, 0, 1, 0, -0.0140421, 0, -0.999901, -3.58327, 2, 23.5997)
+collision_layer = 2
+
+[node name="mesh" type="MeshInstance3D" parent="wall_2"]
+mesh = SubResource("BoxMesh_xx3k3")
+surface_material_override/0 = SubResource("StandardMaterial3D_j8ay2")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="wall_2"]
+shape = SubResource("BoxShape3D_t43o2")
+
+[node name="wall_3" type="StaticBody3D" parent="."]
+transform = Transform3D(-0.953361, 0, -0.301833, 0, 1, 0, 0.301833, 0, -0.953361, -11.7194, 2, 17.2848)
+collision_layer = 2
+
+[node name="mesh" type="MeshInstance3D" parent="wall_3"]
+mesh = SubResource("BoxMesh_ici4d")
+surface_material_override/0 = SubResource("StandardMaterial3D_eyen2")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="wall_3"]
+shape = SubResource("BoxShape3D_w8erk")
+
+[node name="wall_4" type="StaticBody3D" parent="."]
+transform = Transform3D(-0.183693, 0, -0.982984, 0, 1, 0, 0.982984, 0, -0.183693, -11.5805, 2, 0.517714)
+collision_layer = 2
+
+[node name="mesh" type="MeshInstance3D" parent="wall_4"]
+mesh = SubResource("BoxMesh_yxhvm")
+surface_material_override/0 = SubResource("StandardMaterial3D_1vfg3")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="wall_4"]
+shape = SubResource("BoxShape3D_f1an2")
+
+[node name="wall_5" type="StaticBody3D" parent="."]
+transform = Transform3D(0.517231, 0, -0.855846, 0, 1, 0, 0.855846, 0, 0.517231, -13.7315, 2, -13.7419)
+collision_layer = 2
+
+[node name="mesh" type="MeshInstance3D" parent="wall_5"]
+mesh = SubResource("BoxMesh_xe14v")
+surface_material_override/0 = SubResource("StandardMaterial3D_xgml4")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="wall_5"]
+shape = SubResource("BoxShape3D_qrb6s")
+
+[node name="wall_6" type="StaticBody3D" parent="."]
+transform = Transform3D(0.995184, 0, -0.0980296, 0, 1, 0, 0.0980296, 0, 0.995184, 0.0878749, 2, -14.8625)
+collision_layer = 2
+
+[node name="mesh" type="MeshInstance3D" parent="wall_6"]
+mesh = SubResource("BoxMesh_72rx1")
+surface_material_override/0 = SubResource("StandardMaterial3D_llmhn")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="wall_6"]
+shape = SubResource("BoxShape3D_e72x8")
+
+[node name="wall_7" type="StaticBody3D" parent="."]
+transform = Transform3D(0.643557, 0, 0.765399, 0, 1, 0, -0.765399, 0, 0.643557, 14.4163, 2, -20.1668)
+collision_layer = 2
+
+[node name="mesh" type="MeshInstance3D" parent="wall_7"]
+mesh = SubResource("BoxMesh_6m5ht")
+surface_material_override/0 = SubResource("StandardMaterial3D_li24i")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="wall_7"]
+shape = SubResource("BoxShape3D_gb3lj")
+
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_lg0d6")
+environment = SubResource("Environment_2rcph")

@@ -6,8 +6,11 @@ extends Node3D
 ## - Rock lands with physics and disappears after 2s
 
 # State machine
-enum State { IDLE, RISING, HOVERING, SHOOTING, FALLING, LANDED, HIDDEN }
+enum State { IDLE, RISING, HOVERING, SHOOTING, FALLING, LANDED, HIDDEN, SHATTERED }
 var current_state: State = State.IDLE
+
+# Preload shattered rock pieces
+var rock_pieces_scene: PackedScene = preload("res://assets/models/rock_pieces.glb")
 
 # Node references
 @onready var anim_player: AnimationPlayer = $AnimationPlayer
@@ -38,6 +41,11 @@ const SHOOT_TIMEOUT: float = 5.0
 # Spawn position
 var spawn_position: Vector3 = Vector3.ZERO
 
+# Shatter pieces tracking
+var shatter_pieces: Array[RigidBody3D] = []
+var shatter_timer: float = 0.0
+const SHATTER_DISAPPEAR_TIME: float = 2.0
+
 func _ready():
 	print("\n" + "=".repeat(60))
 	print("=== STONE LEVITATE VFX READY ===")
@@ -53,9 +61,14 @@ func _ready():
 	# Create shoot effect particles
 	_create_shoot_effects()
 	
-	# Hide stone initially
+	# Hide stone initially and setup collision detection
 	if stone:
 		stone.visible = false
+		# Ensure contact monitoring is enabled for body_entered signal
+		stone.contact_monitor = true
+		stone.max_contacts_reported = 4
+		stone.body_entered.connect(_on_stone_body_entered)
+		print("  ✓ Stone collision monitoring enabled")
 	
 	print("\n✓✓✓ READY!")
 	print("  - Click on FLOOR to spawn rock at that location")
@@ -154,7 +167,10 @@ func _input(event):
 
 func _handle_click(mouse_pos: Vector2):
 	match current_state:
-		State.IDLE, State.HIDDEN:
+		State.IDLE, State.HIDDEN, State.SHATTERED:
+			# Clean up any existing shatter pieces first
+			if current_state == State.SHATTERED:
+				_cleanup_shatter_pieces()
 			# Raycast to floor to get spawn position
 			var floor_pos = _get_floor_target(mouse_pos)
 			if floor_pos != Vector3.ZERO:
@@ -243,8 +259,9 @@ func _on_hover_start():
 		stone.position.y = 1.2  # Hover height
 		
 		# Re-enable collision for when we shoot/fall
+		# Layer 1 = floor, Layer 2 = walls, Mask 3 = collide with both
 		stone.collision_layer = 1
-		stone.collision_mask = 1
+		stone.collision_mask = 3
 		
 		current_state = State.HOVERING
 		print("  State -> HOVERING at ", stone.position, " (click to shoot!)")
@@ -263,6 +280,12 @@ func _on_hover_timeout():
 
 func _shoot_rock(mouse_pos: Vector2):
 	current_state = State.SHOOTING
+	
+	# Ensure collision with walls is enabled
+	if stone:
+		stone.collision_layer = 1
+		stone.collision_mask = 3  # Layer 1 (floor) + Layer 2 (walls)
+		print("  Collision mask set to 3 (floor + walls)")
 	
 	# Get target position on floor
 	var target = _get_floor_target(mouse_pos)
@@ -377,6 +400,12 @@ func _process(delta):
 		landed_timer -= delta
 		if landed_timer <= 0:
 			_hide_everything()
+	
+	# Shatter pieces cleanup timer
+	if current_state == State.SHATTERED:
+		shatter_timer -= delta
+		if shatter_timer <= 0:
+			_cleanup_shatter_pieces()
 
 func _on_rock_landed():
 	if current_state == State.LANDED:
@@ -402,3 +431,185 @@ func _hide_everything():
 		shoot_smoke.visible = false
 	
 	print("  Hidden. Click on floor to spawn again!")
+
+
+func _on_stone_body_entered(body: Node):
+	print("  [Collision] body_entered: ", body.name, " state=", State.keys()[current_state])
+	
+	# Only shatter if shooting and hit a wall
+	if current_state != State.SHOOTING:
+		print("    -> Ignored (not shooting)")
+		return
+	
+	# Check if it's a wall (name starts with "wall_")
+	if body.name.begins_with("wall_"):
+		print("\n=== WALL HIT! Shattering rock! ===")
+		_shatter_rock(body)  # Pass the wall we hit
+	else:
+		print("    -> Not a wall, ignoring")
+
+
+func _shatter_rock(wall: Node3D):
+	if not stone:
+		return
+	
+	# Capture rock's momentum before hiding
+	var rock_pos = stone.global_position
+	var rock_vel = stone.linear_velocity
+	var wall_pos = wall.global_position if wall else rock_pos
+	
+	print("  Rock velocity at impact: ", rock_vel)
+	print("  Rock position: ", rock_pos)
+	print("  Wall position: ", wall_pos)
+	
+	# Hide original rock
+	stone.visible = false
+	stone.freeze = true
+	stone.collision_layer = 0
+	stone.collision_mask = 0
+	
+	# Spawn shattered pieces - pass wall position for proper normal calculation
+	_spawn_shatter_pieces(rock_pos, rock_vel, wall_pos)
+	
+	# Trigger impact effects at collision point
+	_trigger_impact_effects(rock_pos, rock_vel)
+	
+	# Screen shake for impact
+	_start_screen_shake(0.2, 0.25)
+	
+	# Start shatter cleanup timer
+	current_state = State.SHATTERED
+	shatter_timer = SHATTER_DISAPPEAR_TIME
+
+
+func _trigger_impact_effects(impact_pos: Vector3, _impact_vel: Vector3):
+	# Debris burst at impact
+	if shoot_debris:
+		shoot_debris.position = impact_pos
+		shoot_debris.visible = true
+		shoot_debris.restart()
+
+
+func _spawn_shatter_pieces(rock_pos: Vector3, _incoming_velocity: Vector3, _wall_pos: Vector3):
+	# Clean up any existing pieces first
+	_cleanup_shatter_pieces()
+	
+	# Instantiate the rock_pieces scene
+	var pieces_instance = rock_pieces_scene.instantiate()
+	
+	# Get all mesh children from the GLB
+	var meshes: Array[MeshInstance3D] = []
+	_collect_meshes(pieces_instance, meshes)
+	
+	print("  Found ", meshes.size(), " piece meshes in rock_pieces.glb")
+	
+	# === SIMPLE APPROACH: Let physics engine handle collisions naturally ===
+	# Don't try to manually calculate reflections - just spawn pieces and let them
+	# collide with walls/floor naturally via the physics engine
+	
+	for i in meshes.size():
+		var mesh_node = meshes[i]
+		var piece_rigid = RigidBody3D.new()
+		piece_rigid.name = "shatter_piece_%d" % i
+		
+		# Spawn at rock position with small random offset
+		var local_offset = mesh_node.global_transform.origin * 0.3
+		var random_offset = Vector3(
+			randf_range(-0.2, 0.2),
+			randf_range(0, 0.2),
+			randf_range(-0.2, 0.2)
+		)
+		piece_rigid.position = rock_pos + local_offset + random_offset
+		
+		# Physics properties
+		piece_rigid.mass = 0.6
+		piece_rigid.physics_material_override = PhysicsMaterial.new()
+		piece_rigid.physics_material_override.bounce = 0.5  # Good bounce off walls
+		piece_rigid.physics_material_override.friction = 0.7
+		piece_rigid.angular_damp = 1.0
+		piece_rigid.linear_damp = 0.2
+		piece_rigid.freeze = false
+		piece_rigid.continuous_cd = true  # Prevent tunneling
+		
+		# === KEY FIX: Collide with BOTH floor (layer 1) AND walls (layer 2) ===
+		piece_rigid.collision_layer = 1
+		piece_rigid.collision_mask = 3  # Binary 11 = layers 1 and 2
+		
+		# Clone the mesh
+		var piece_mesh = MeshInstance3D.new()
+		piece_mesh.name = "mesh"
+		piece_mesh.mesh = mesh_node.mesh
+		piece_mesh.scale = Vector3(0.8, 0.8, 0.8)
+		
+		# Apply material
+		var mat = StandardMaterial3D.new()
+		var rock_tex = load("res://assets/textures/T_rocks_A_color.png") as Texture2D
+		if rock_tex:
+			mat.albedo_texture = rock_tex
+		else:
+			mat.albedo_color = Color(0.6, 0.5, 0.4, 1.0)
+		piece_mesh.set_surface_override_material(0, mat)
+		
+		piece_rigid.add_child(piece_mesh)
+		
+		# Collision shape
+		var collision = CollisionShape3D.new()
+		var box = BoxShape3D.new()
+		box.size = Vector3(0.3, 0.3, 0.3)
+		collision.shape = box
+		piece_rigid.add_child(collision)
+		
+		# Add to scene
+		add_child(piece_rigid)
+		shatter_pieces.append(piece_rigid)
+		
+		# === SIMPLE VELOCITY: Start with ZERO, apply small random impulse ===
+		# Let the physics engine handle wall/floor collisions naturally
+		piece_rigid.linear_velocity = Vector3.ZERO
+		
+		# Small random explosion impulse (not directional - just scatter)
+		var impulse = Vector3(
+			randf_range(-3, 3),
+			randf_range(2, 5),  # Upward bias
+			randf_range(-3, 3)
+		)
+		piece_rigid.apply_central_impulse(impulse)
+		
+		# Random tumbling
+		piece_rigid.angular_velocity = Vector3(
+			randf_range(-5, 5),
+			randf_range(-3, 3),
+			randf_range(-5, 5)
+		)
+	
+	# Clean up the instance
+	pieces_instance.queue_free()
+	
+	print("  Spawned ", shatter_pieces.size(), " pieces (physics engine handles collisions)")
+
+
+func _collect_meshes(node: Node, meshes: Array[MeshInstance3D]):
+	if node is MeshInstance3D and node.mesh:
+		meshes.append(node)
+	for child in node.get_children():
+		_collect_meshes(child, meshes)
+
+
+func _cleanup_shatter_pieces():
+	for piece in shatter_pieces:
+		if is_instance_valid(piece):
+			piece.queue_free()
+	shatter_pieces.clear()
+	
+	# Also hide other effects
+	if debris:
+		debris.visible = false
+	if smoke:
+		smoke.visible = false
+	if shoot_debris:
+		shoot_debris.visible = false
+	if shoot_smoke:
+		shoot_smoke.visible = false
+	
+	current_state = State.HIDDEN
+	print("  Shatter pieces cleaned up. Click on floor to spawn again!")
