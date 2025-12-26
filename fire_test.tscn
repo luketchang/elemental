@@ -98,7 +98,7 @@ material_override = SubResource("ShaderMaterial_tohyo")
 mesh = SubResource("SphereMesh_8n6ns")
 
 [node name="SmokeParticles" type="GPUParticles3D" parent="Fireball2"]
-transform = Transform3D(-0.077276, 0, 0.99701, 0, 1, 0, -0.99701, 0, -0.077276, 0.146247, 0.0752579, -0.103744)
+transform = Transform3D(-0.077276, 0, 0.997011, 0, 1, 0, -0.997011, 0, -0.077276, 0.210671, 0.0752579, -0.543207)
 material_override = SubResource("StandardMaterial3D_8n6ns")
 amount = 80
 lifetime = 1.57
