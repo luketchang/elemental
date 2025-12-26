@@ -464,17 +464,17 @@ func _create_smoke_particles() -> GPUParticles3D:
 	mat.proximity_fade_distance = 0.2
 	smoke.material_override = mat
 	
-	# Process material - low dust at base
+	# Process material - dust puff that rises slightly like real disturbed dust
 	var process_mat = ParticleProcessMaterial.new()
 	process_mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
-	process_mat.emission_sphere_radius = 0.3  # Focused at base
-	process_mat.direction = Vector3(0, 0.2, 0)  # Mostly horizontal, slight up
-	process_mat.spread = 90.0  # Spreads outward from base
-	process_mat.initial_velocity_min = 0.8
-	process_mat.initial_velocity_max = 1.5
-	process_mat.gravity = Vector3(0, -0.5, 0)  # Slight downward, stays low
-	process_mat.damping_min = 2.0
-	process_mat.damping_max = 4.0  # Slows down quickly
+	process_mat.emission_sphere_radius = 0.35  # Focused at base
+	process_mat.direction = Vector3(0, 1, 0)  # Upward direction
+	process_mat.spread = 120.0  # Wide spread around the rock
+	process_mat.initial_velocity_min = 0.6
+	process_mat.initial_velocity_max = 1.2
+	process_mat.gravity = Vector3(0, 0.3, 0)  # Slight upward - dust rises when disturbed
+	process_mat.damping_min = 1.5
+	process_mat.damping_max = 2.5  # Lighter damping for natural float
 	
 	# Scale curve - quick puff that expands then fades
 	var scale_curve = Curve.new()

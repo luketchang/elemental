@@ -1,0 +1,69 @@
+[gd_scene load_steps=10 format=3 uid="uid://b8r3lgpuh653f"]
+
+[ext_resource type="Shader" uid="uid://bb0ojc12ix2rv" path="res://fireball_shader.tres" id="1_u5kky"]
+[ext_resource type="ArrayMesh" uid="uid://c4o8neq5swam0" path="res://assets/models/fireball2.obj" id="2_u5kky"]
+[ext_resource type="Shader" uid="uid://bus73twkypxy5" path="res://fire_header_shader.tres" id="3_xeefp"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_xeefp"]
+render_priority = 0
+shader = ExtResource("1_u5kky")
+shader_parameter/FireColor = Color(2, 1.3, 0.6, 1)
+shader_parameter/speed = Vector2(0, -3)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xeefp"]
+blend_mode = 1
+cull_mode = 2
+shading_mode = 0
+disable_ambient_light = true
+disable_fog = true
+vertex_color_use_as_albedo = true
+vertex_color_is_srgb = true
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_tohyo"]
+emission_shape = 6
+emission_ring_axis = Vector3(0, 0, 1)
+emission_ring_height = 1.0
+emission_ring_radius = 1.0
+emission_ring_inner_radius = 0.0
+emission_ring_cone_angle = 0.0
+direction = Vector3(0, 0, -1)
+spread = 0.0
+initial_velocity_min = 3.0
+initial_velocity_max = 8.0
+radial_velocity_min = 0.999978
+radial_velocity_max = 1.99998
+gravity = Vector3(0, 0, 0)
+color = Color(1, 0.652, 0.13, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_p1n4n"]
+radius = 0.01
+height = 0.02
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_tohyo"]
+render_priority = 0
+shader = ExtResource("3_xeefp")
+shader_parameter/ball_color = Color(0.862745, 0.560784, 0, 1)
+shader_parameter/fresnel_power = 5.0
+
+[sub_resource type="SphereMesh" id="SphereMesh_8n6ns"]
+
+[node name="Node3D" type="Node3D"]
+
+[node name="Fireball2" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.00385716, 0, 0.499985, 0, 0.5, 0, -0.499985, 0, -0.00385716, 0.156608, 0, -0.774845)
+material_override = SubResource("ShaderMaterial_xeefp")
+cast_shadow = 0
+mesh = ExtResource("2_u5kky")
+
+[node name="GPUParticles3D" type="GPUParticles3D" parent="Fireball2"]
+transform = Transform3D(1.6, 0, 0, 0, 1.6, 0, 0, 0, 1.6, -0.0284991, 0, -0.483266)
+material_override = SubResource("StandardMaterial3D_xeefp")
+amount = 16
+lifetime = 0.58
+process_material = SubResource("ParticleProcessMaterial_tohyo")
+draw_pass_1 = SubResource("SphereMesh_p1n4n")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Fireball2"]
+transform = Transform3D(1.6, 0, 0, 0, 1.6, 0, 0, 0, 1.6, 0, 0, 0)
+material_override = SubResource("ShaderMaterial_tohyo")
+mesh = SubResource("SphereMesh_8n6ns")

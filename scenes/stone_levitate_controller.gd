@@ -75,84 +75,113 @@ func _ready():
 	print("  - Click again while hovering to SHOOT toward cursor!\n")
 
 func _create_shoot_effects():
-	# Create backward debris burst for shooting
+	# Create debris burst - inspired by earth-bending reference
+	# Debris shoots UP then falls with heavy gravity for natural look
 	shoot_debris = GPUParticles3D.new()
 	shoot_debris.name = "shoot_debris"
 	shoot_debris.emitting = false
 	shoot_debris.one_shot = true
-	shoot_debris.amount = 8
-	shoot_debris.lifetime = 1.0
-	shoot_debris.explosiveness = 1.0
+	shoot_debris.amount = 30  # More particles for fuller effect
+	shoot_debris.lifetime = 2.5  # Longer life for realistic falling
+	shoot_debris.explosiveness = 0.9  # Slight stagger for organic feel
 	shoot_debris.visible = false
+	shoot_debris.fixed_fps = 60  # Smoother simulation
 	
 	var debris_mesh = load("res://assets/models/debris.obj") as Mesh
 	if debris_mesh:
 		shoot_debris.draw_pass_1 = debris_mesh
 	
 	var debris_mat = StandardMaterial3D.new()
-	debris_mat.albedo_color = Color(0.45, 0.35, 0.25, 1.0)
+	debris_mat.albedo_color = Color(0.4, 0.32, 0.22, 1.0)  # Earthy brown
 	shoot_debris.material_override = debris_mat
 	
 	var debris_pm = ParticleProcessMaterial.new()
 	debris_pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
-	debris_pm.emission_sphere_radius = 0.1
-	debris_pm.direction = Vector3(0, 0, 1)
-	debris_pm.spread = 30.0
-	debris_pm.initial_velocity_min = 4.0
-	debris_pm.initial_velocity_max = 6.0
-	debris_pm.gravity = Vector3(0, -15, 0)
-	debris_pm.scale_min = 0.2
-	debris_pm.scale_max = 0.5
-	shoot_debris.process_material = debris_pm
+	debris_pm.emission_sphere_radius = 0.25
+	debris_pm.particle_flag_rotate_y = true  # Natural tumbling
+	debris_pm.direction = Vector3(0, 1, 0)  # Shoot UP
+	debris_pm.spread = 20.0  # Tight cone upward
+	debris_pm.initial_velocity_min = 5.0
+	debris_pm.initial_velocity_max = 10.0
+	debris_pm.gravity = Vector3(0, -28, 0)  # Heavy gravity for quick fall
+	debris_pm.scale_min = 0.25
+	debris_pm.scale_max = 0.6
 	
+	# Radial velocity for outward burst
+	debris_pm.radial_velocity_min = 1.0
+	debris_pm.radial_velocity_max = 2.5
+	
+	# Scale curve - fade to 0 at end to avoid pop-out
+	var debris_scale_curve = Curve.new()
+	debris_scale_curve.add_point(Vector2(0.0, 1.0))
+	debris_scale_curve.add_point(Vector2(0.7, 0.9))
+	debris_scale_curve.add_point(Vector2(1.0, 0.0))
+	var debris_scale_tex = CurveTexture.new()
+	debris_scale_tex.curve = debris_scale_curve
+	debris_pm.scale_curve = debris_scale_tex
+	
+	# Enable collision for realistic bouncing
+	debris_pm.collision_mode = ParticleProcessMaterial.COLLISION_RIGID
+	debris_pm.collision_friction = 0.7
+	debris_pm.collision_bounce = 0.25
+	debris_pm.collision_use_scale = true
+	
+	shoot_debris.process_material = debris_pm
 	add_child(shoot_debris)
 	
-	# Create impact smoke puff
+	# Create impact smoke puff - soft billowing dust cloud
 	shoot_smoke = GPUParticles3D.new()
 	shoot_smoke.name = "shoot_smoke"
 	shoot_smoke.emitting = false
 	shoot_smoke.one_shot = true
-	shoot_smoke.amount = 12
-	shoot_smoke.lifetime = 1.0
-	shoot_smoke.explosiveness = 1.0
+	shoot_smoke.amount = 20  # Fuller cloud
+	shoot_smoke.lifetime = 1.2
+	shoot_smoke.explosiveness = 0.85
 	shoot_smoke.visible = false
 	
 	var quad = QuadMesh.new()
-	quad.size = Vector2(0.8, 0.8)
+	quad.size = Vector2(1.0, 1.0)  # Slightly larger
 	shoot_smoke.draw_pass_1 = quad
 	
 	var smoke_mat = StandardMaterial3D.new()
 	smoke_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	smoke_mat.albedo_color = Color(0.6, 0.55, 0.45, 0.9)
+	smoke_mat.albedo_color = Color(0.55, 0.5, 0.42, 0.85)  # Dusty brown
 	var smoke_tex = load("res://assets/textures/smoke.png") as Texture2D
 	if smoke_tex:
 		smoke_mat.albedo_texture = smoke_tex
 	smoke_mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	# Proximity fade for soft blending with surfaces - prevents harsh edges
+	smoke_mat.proximity_fade_enabled = true
+	smoke_mat.proximity_fade_distance = 0.4
 	shoot_smoke.material_override = smoke_mat
 	
 	var smoke_pm = ParticleProcessMaterial.new()
 	smoke_pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
-	smoke_pm.emission_sphere_radius = 0.2
-	smoke_pm.direction = Vector3(0, 0, 0)
-	smoke_pm.spread = 180.0
-	smoke_pm.initial_velocity_min = 1.0
-	smoke_pm.initial_velocity_max = 2.0
-	smoke_pm.gravity = Vector3(0, 0, 0)
-	smoke_pm.damping_min = 3.0
-	smoke_pm.damping_max = 5.0
+	smoke_pm.emission_sphere_radius = 0.3
+	smoke_pm.direction = Vector3(0, 1, 0)  # Slight upward bias
+	smoke_pm.spread = 180.0  # Full sphere spread
+	smoke_pm.initial_velocity_min = 0.8
+	smoke_pm.initial_velocity_max = 1.8
+	smoke_pm.gravity = Vector3(0, 0.5, 0)  # Gentle rise like real dust
+	smoke_pm.damping_min = 1.5
+	smoke_pm.damping_max = 2.5  # Reduced damping for more natural float
 	
+	# Alpha curve - quick appear, slow fade
 	var alpha_curve = Curve.new()
-	alpha_curve.add_point(Vector2(0.0, 1.0))
-	alpha_curve.add_point(Vector2(0.3, 0.6))
+	alpha_curve.add_point(Vector2(0.0, 0.9))
+	alpha_curve.add_point(Vector2(0.15, 0.8))
+	alpha_curve.add_point(Vector2(0.6, 0.4))
 	alpha_curve.add_point(Vector2(1.0, 0.0))
 	var alpha_tex = CurveTexture.new()
 	alpha_tex.curve = alpha_curve
 	smoke_pm.alpha_curve = alpha_tex
 	
+	# Scale curve - starts small, grows as it dissipates
 	var scale_curve = Curve.new()
-	scale_curve.add_point(Vector2(0.0, 0.5))
-	scale_curve.add_point(Vector2(0.5, 1.0))
-	scale_curve.add_point(Vector2(1.0, 1.2))
+	scale_curve.add_point(Vector2(0.0, 0.4))
+	scale_curve.add_point(Vector2(0.3, 0.8))
+	scale_curve.add_point(Vector2(0.7, 1.1))
+	scale_curve.add_point(Vector2(1.0, 1.3))
 	var scale_tex = CurveTexture.new()
 	scale_tex.curve = scale_curve
 	smoke_pm.scale_curve = scale_tex
@@ -241,6 +270,7 @@ func _start_levitation():
 	if smoke:
 		smoke.position = Vector3(spawn_position.x, 0.05, spawn_position.z)
 		smoke.visible = true
+		smoke.restart()  # Need to restart one_shot particles!
 	
 	# Hide shoot effects
 	if shoot_debris:
