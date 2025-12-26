@@ -1,8 +1,9 @@
-[gd_scene load_steps=10 format=3 uid="uid://b8r3lgpuh653f"]
+[gd_scene load_steps=14 format=3 uid="uid://b8r3lgpuh653f"]
 
 [ext_resource type="Shader" uid="uid://bb0ojc12ix2rv" path="res://fireball_shader.tres" id="1_u5kky"]
 [ext_resource type="ArrayMesh" uid="uid://c4o8neq5swam0" path="res://assets/models/fireball2.obj" id="2_u5kky"]
 [ext_resource type="Shader" uid="uid://bus73twkypxy5" path="res://fire_header_shader.tres" id="3_xeefp"]
+[ext_resource type="Texture2D" uid="uid://bdufkyiwdoy3t" path="res://assets/textures/smoke_flipbook.png" id="4_tohyo"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_xeefp"]
 render_priority = 0
@@ -47,6 +48,34 @@ shader_parameter/fresnel_power = 5.0
 
 [sub_resource type="SphereMesh" id="SphereMesh_8n6ns"]
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8n6ns"]
+transparency = 1
+vertex_color_use_as_albedo = true
+albedo_texture = ExtResource("4_tohyo")
+billboard_mode = 3
+particles_anim_h_frames = 8
+particles_anim_v_frames = 8
+particles_anim_loop = false
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_p1n4n"]
+particle_flag_rotate_y = true
+emission_shape = 1
+emission_sphere_radius = 1.0
+angle_min = -180.0
+angle_max = 180.0
+spread = 15.0
+initial_velocity_min = 5.0
+initial_velocity_max = 7.0
+angular_velocity_min = -50.0
+angular_velocity_max = 50.0
+gravity = Vector3(0, 0, 0)
+scale_max = 2.0
+color = Color(0.288518, 0.288518, 0.288518, 1)
+anim_speed_min = 1.0
+anim_speed_max = 1.0
+
+[sub_resource type="QuadMesh" id="QuadMesh_tmps5"]
+
 [node name="Node3D" type="Node3D"]
 
 [node name="Fireball2" type="MeshInstance3D" parent="."]
@@ -55,7 +84,7 @@ material_override = SubResource("ShaderMaterial_xeefp")
 cast_shadow = 0
 mesh = ExtResource("2_u5kky")
 
-[node name="GPUParticles3D" type="GPUParticles3D" parent="Fireball2"]
+[node name="SparkParticles" type="GPUParticles3D" parent="Fireball2"]
 transform = Transform3D(1.6, 0, 0, 0, 1.6, 0, 0, 0, 1.6, -0.0284991, 0, -0.483266)
 material_override = SubResource("StandardMaterial3D_xeefp")
 amount = 16
@@ -67,3 +96,12 @@ draw_pass_1 = SubResource("SphereMesh_p1n4n")
 transform = Transform3D(1.6, 0, 0, 0, 1.6, 0, 0, 0, 1.6, 0, 0, 0)
 material_override = SubResource("ShaderMaterial_tohyo")
 mesh = SubResource("SphereMesh_8n6ns")
+
+[node name="SmokeParticles" type="GPUParticles3D" parent="Fireball2"]
+transform = Transform3D(-0.077276, 0, 0.99701, 0, 1, 0, -0.99701, 0, -0.077276, 0.146247, 0.0752579, -0.103744)
+material_override = SubResource("StandardMaterial3D_8n6ns")
+amount = 80
+lifetime = 1.57
+fixed_fps = 60
+process_material = SubResource("ParticleProcessMaterial_p1n4n")
+draw_pass_1 = SubResource("QuadMesh_tmps5")
