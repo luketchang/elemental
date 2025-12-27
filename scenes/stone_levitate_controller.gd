@@ -369,21 +369,9 @@ func _shoot_rock(mouse_pos: Vector2):
 	# Start screen shake
 	_start_screen_shake(0.15, 0.2)
 
-func _trigger_shoot_effects(shoot_direction: Vector3):
-	var rock_pos = stone.position
-	
-	if shoot_debris:
-		shoot_debris.position = rock_pos
-		var backward = -shoot_direction
-		if backward.length() > 0.01:
-			shoot_debris.look_at(rock_pos + backward, Vector3.UP)
-		shoot_debris.visible = true
-		shoot_debris.restart()
-	
-	if shoot_smoke:
-		shoot_smoke.position = rock_pos
-		shoot_smoke.visible = true
-		shoot_smoke.restart()
+func _trigger_shoot_effects(_shoot_direction: Vector3):
+	# Debris/smoke only on levitate (ground burst) and wall impact, not on shoot
+	pass
 
 func _start_screen_shake(intensity: float, duration: float):
 	shake_intensity = intensity
