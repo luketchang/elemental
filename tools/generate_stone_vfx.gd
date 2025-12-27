@@ -1,26 +1,25 @@
 @tool
 extends EditorScript
 
-## Stone Levitation VFX Generator (v6.0 - Physics-Based)
+## Elemental VFX Generator (v7.0 - Rock + Fire)
 ## Run this script from: File -> Run (or Ctrl+Shift+X)
 ## Generates: res://scenes/stone_levitate_vfx.tscn
 ##
-## PHYSICS APPROACH:
-## - Stones are RigidBody3D nodes with collision shapes
-## - Launch: Upward impulse applied at t=0.0s
-## - Hover: Physics frozen at peak (t=0.2s-3.2s)
-## - Fall: Physics unfrozen at t=3.2s, natural bounce/roll on ground
-## - Stones have mass, bounce, friction for realistic behavior
+## ELEMENTS:
+## - ROCK: RigidBody3D stone with levitate, hover, shoot, shatter
+## - FIRE: Fireball with flame shader, sparks, smoke trail (pass-through)
+##
+## Toggle between elements with Tab key in-game
 ##
 ## NOTE: EditorScript requires @tool but only runs when you explicitly execute it
 
 func _run():
 	
-	print("\n\n=== GENERATING STONE LEVITATION VFX SCENE ===")
-	print("🔧 GENERATOR VERSION: v6.0 - PHYSICS-BASED STONES")
-	print("Stones: RigidBody3D with impulse launch, freeze hover, physics fall")
-	print("Debris: 15 particles, vel 5-7 (higher), spread 20° (consistent), lifetime 2s")
-	print("If you don't see this version number, the script wasn't saved/reloaded!\n")
+	print("\n\n=== GENERATING ELEMENTAL VFX SCENE ===")
+	print("🔧 GENERATOR VERSION: v7.0 - ROCK + FIRE ELEMENTS")
+	print("Rock: RigidBody3D with levitate, hover, shoot, wall shatter")
+	print("Fire: Fireball with flame shader, sparks, smoke trail (pass-through walls)")
+	print("Toggle: Press Tab to switch between elements\n")
 	
 	# Create root node
 	var root = Node3D.new()
@@ -33,7 +32,7 @@ func _run():
 		root.set_script(script)
 		# Add version metadata to the root node
 		var timestamp = Time.get_datetime_string_from_system()
-		root.set_meta("generator_version", "v6.0")
+		root.set_meta("generator_version", "v7.0")
 		root.set_meta("generated_at", timestamp)
 		root.set_meta("physics_enabled", "true")
 		root.set_meta("stone_type", "RigidBody3D")
@@ -126,12 +125,29 @@ func _run():
 			child.owner = root
 	print("✓ Walls: ", walls.size(), " walls placed randomly")
 	
+	# === FIREBALL (for fire element mode) ===
+	print("\nAdding fireball...")
+	var fireball = _create_fireball()
+	root.add_child(fireball)
+	fireball.owner = root
+	# Set owner for all children recursively
+	_set_owner_recursive(fireball, root)
+	print("✓ Fireball: ", fireball.name, " (hidden, ready for fire mode)")
+	
 	# === WORLD ENVIRONMENT (background, not just void) ===
 	print("\nAdding environment...")
 	var env = _create_environment()
 	root.add_child(env)
 	env.owner = root
 	print("✓ WorldEnvironment: ", env.name)
+	
+	# === UI OVERLAY (element indicator) ===
+	print("\nAdding UI...")
+	var ui = _create_ui()
+	root.add_child(ui)
+	ui.owner = root
+	_set_owner_recursive(ui, root)
+	print("✓ UI: element indicator added")
 	
 	# === PACK AND SAVE ===
 	print("\n=== PACKING AND SAVING ===")
@@ -649,3 +665,193 @@ func _create_walls() -> Array[StaticBody3D]:
 		walls.append(wall)
 	
 	return walls
+
+
+func _set_owner_recursive(node: Node, owner: Node):
+	for child in node.get_children():
+		child.owner = owner
+		_set_owner_recursive(child, owner)
+
+
+func _create_fireball() -> Node3D:
+	# Create fireball container (will be moved as a unit)
+	var fireball_root = Node3D.new()
+	fireball_root.name = "fireball"
+	fireball_root.visible = false  # Start hidden
+	
+	# === MAIN FIREBALL MESH (with flame shader) ===
+	var fireball_mesh = MeshInstance3D.new()
+	fireball_mesh.name = "fireball_mesh"
+	
+	# Load fireball mesh
+	var fb_mesh = load("res://assets/models/fireball2.obj") as Mesh
+	if fb_mesh:
+		fireball_mesh.mesh = fb_mesh
+		print("  - ✓ Loaded fireball2.obj mesh")
+	else:
+		push_warning("  - ✗ Could not load fireball2.obj")
+	
+	# Create shader material with exact parameters from fire_test.tscn
+	var fireball_shader = load("res://fireball_shader.tres")
+	if fireball_shader:
+		var shader_mat = ShaderMaterial.new()
+		shader_mat.shader = fireball_shader
+		shader_mat.set_shader_parameter("FireColor", Color(2, 1.3, 0.6, 1))
+		shader_mat.set_shader_parameter("speed", Vector2(0, -3))
+		fireball_mesh.material_override = shader_mat
+		print("  - ✓ Loaded fireball shader")
+	else:
+		push_warning("  - ✗ Could not load fireball_shader.tres")
+	
+	fireball_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	fireball_mesh.scale = Vector3(0.5, 0.5, 0.5)
+	fireball_root.add_child(fireball_mesh)
+	
+	# === INNER GLOW SPHERE (fresnel shader) ===
+	var inner_glow = MeshInstance3D.new()
+	inner_glow.name = "inner_glow"
+	inner_glow.mesh = SphereMesh.new()
+	inner_glow.scale = Vector3(0.8, 0.8, 0.8)  # 1.6 * 0.5 base scale
+	
+	var fresnel_shader = load("res://fire_header_shader.tres")
+	if fresnel_shader:
+		var fresnel_mat = ShaderMaterial.new()
+		fresnel_mat.shader = fresnel_shader
+		fresnel_mat.set_shader_parameter("ball_color", Color(0.862745, 0.560784, 0, 1))
+		fresnel_mat.set_shader_parameter("fresnel_power", 5.0)
+		inner_glow.material_override = fresnel_mat
+		print("  - ✓ Loaded fresnel shader")
+	else:
+		push_warning("  - ✗ Could not load fire_header_shader.tres")
+	
+	fireball_mesh.add_child(inner_glow)
+	
+	# === SPARK PARTICLES ===
+	var spark_particles = GPUParticles3D.new()
+	spark_particles.name = "spark_particles"
+	spark_particles.amount = 16
+	spark_particles.lifetime = 0.58
+	spark_particles.transform = Transform3D.IDENTITY.scaled(Vector3(0.8, 0.8, 0.8))  # 1.6 * 0.5
+	spark_particles.transform.origin = Vector3(-0.014, 0, -0.24)  # Adjusted for scale
+	
+	# Spark material - additive blending
+	var spark_mat = StandardMaterial3D.new()
+	spark_mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	spark_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	spark_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	spark_mat.disable_ambient_light = true
+	spark_mat.disable_fog = true
+	spark_mat.vertex_color_use_as_albedo = true
+	spark_mat.vertex_color_is_srgb = true
+	spark_particles.material_override = spark_mat
+	
+	# Spark process material
+	var spark_pm = ParticleProcessMaterial.new()
+	spark_pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_RING
+	spark_pm.emission_ring_axis = Vector3(0, 0, 1)
+	spark_pm.emission_ring_height = 1.0
+	spark_pm.emission_ring_radius = 1.0
+	spark_pm.emission_ring_inner_radius = 0.0
+	spark_pm.direction = Vector3(0, 0, -1)  # Trail behind
+	spark_pm.spread = 0.0
+	spark_pm.initial_velocity_min = 3.0
+	spark_pm.initial_velocity_max = 8.0
+	spark_pm.radial_velocity_min = 0.999978
+	spark_pm.radial_velocity_max = 1.99998
+	spark_pm.gravity = Vector3(0, 0, 0)
+	spark_pm.color = Color(1, 0.652, 0.13, 1)  # Orange
+	spark_particles.process_material = spark_pm
+	
+	# Tiny sphere mesh for sparks
+	var spark_mesh = SphereMesh.new()
+	spark_mesh.radius = 0.01
+	spark_mesh.height = 0.02
+	spark_particles.draw_pass_1 = spark_mesh
+	
+	fireball_mesh.add_child(spark_particles)
+	
+	# === SMOKE TRAIL PARTICLES ===
+	var smoke_particles = GPUParticles3D.new()
+	smoke_particles.name = "smoke_particles"
+	smoke_particles.amount = 80
+	smoke_particles.lifetime = 1.57
+	smoke_particles.fixed_fps = 60
+	smoke_particles.transform.origin = Vector3(0.1, 0.04, -0.27)  # Adjusted for scale
+	
+	# Smoke material with flipbook
+	var smoke_mat = StandardMaterial3D.new()
+	smoke_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	smoke_mat.vertex_color_use_as_albedo = true
+	var smoke_flipbook = load("res://assets/textures/smoke_flipbook.png") as Texture2D
+	if smoke_flipbook:
+		smoke_mat.albedo_texture = smoke_flipbook
+		print("  - ✓ Loaded smoke flipbook texture")
+	else:
+		push_warning("  - ✗ Could not load smoke_flipbook.png")
+	smoke_mat.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	smoke_mat.particles_anim_h_frames = 8
+	smoke_mat.particles_anim_v_frames = 8
+	smoke_mat.particles_anim_loop = false
+	smoke_particles.material_override = smoke_mat
+	
+	# Smoke process material
+	var smoke_pm = ParticleProcessMaterial.new()
+	smoke_pm.particle_flag_rotate_y = true
+	smoke_pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	smoke_pm.emission_sphere_radius = 1.0
+	smoke_pm.angle_min = -180.0
+	smoke_pm.angle_max = 180.0
+	smoke_pm.spread = 15.0
+	smoke_pm.initial_velocity_min = 5.0
+	smoke_pm.initial_velocity_max = 7.0
+	smoke_pm.angular_velocity_min = -50.0
+	smoke_pm.angular_velocity_max = 50.0
+	smoke_pm.gravity = Vector3(0, 0, 0)
+	smoke_pm.scale_max = 2.0
+	smoke_pm.color = Color(0.288518, 0.288518, 0.288518, 1)  # Gray
+	smoke_pm.anim_speed_min = 1.0
+	smoke_pm.anim_speed_max = 1.0
+	smoke_particles.process_material = smoke_pm
+	
+	# Quad mesh for smoke billboards
+	var smoke_quad = QuadMesh.new()
+	smoke_particles.draw_pass_1 = smoke_quad
+	
+	fireball_mesh.add_child(smoke_particles)
+	
+	print("  - Created fireball with flame mesh, inner glow, sparks, and smoke trail")
+	
+	return fireball_root
+
+
+func _create_ui() -> CanvasLayer:
+	var canvas = CanvasLayer.new()
+	canvas.name = "UI"
+	
+	# Element indicator label
+	var label = Label.new()
+	label.name = "element_label"
+	label.text = "🪨 ROCK"
+	label.add_theme_font_size_override("font_size", 32)
+	label.add_theme_color_override("font_color", Color(1, 1, 1, 0.9))
+	label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+	label.add_theme_constant_override("shadow_offset_x", 2)
+	label.add_theme_constant_override("shadow_offset_y", 2)
+	label.position = Vector2(20, 20)
+	
+	canvas.add_child(label)
+	
+	# Instructions label
+	var instructions = Label.new()
+	instructions.name = "instructions_label"
+	instructions.text = "Tab: Switch Element | Click: Action"
+	instructions.add_theme_font_size_override("font_size", 18)
+	instructions.add_theme_color_override("font_color", Color(1, 1, 1, 0.6))
+	instructions.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.5))
+	instructions.add_theme_constant_override("shadow_offset_x", 1)
+	instructions.add_theme_constant_override("shadow_offset_y", 1)
+	instructions.position = Vector2(20, 60)
+	
+	canvas.add_child(instructions)
+	
+	return canvas

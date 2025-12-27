@@ -1,12 +1,16 @@
 extends Node3D
 
-## Stone Levitation VFX Controller
-## - Click on floor to spawn and levitate rock at that position
-## - Click again while hovering to shoot toward cursor
-## - Rock lands with physics and disappears after 2s
+## Elemental VFX Controller
+## - Tab to toggle between ROCK and FIRE elements
+## - ROCK: Click to spawn/levitate, click again to shoot (shatters on walls)
+## - FIRE: Click to launch fireball toward cursor (passes through walls)
+
+# Element selection
+enum Element { ROCK, FIRE }
+var current_element: Element = Element.ROCK
 
 # State machine
-enum State { IDLE, RISING, HOVERING, SHOOTING, FALLING, LANDED, HIDDEN, SHATTERED }
+enum State { IDLE, RISING, HOVERING, SHOOTING, FALLING, LANDED, HIDDEN, SHATTERED, FIRE_FLYING }
 var current_state: State = State.IDLE
 
 # Preload shattered rock pieces
@@ -19,6 +23,8 @@ var rock_pieces_scene: PackedScene = preload("res://assets/models/rock_pieces.gl
 @onready var smoke: GPUParticles3D = $smoke
 @onready var camera: Camera3D = $Camera3D
 @onready var floor_node: Node3D = $floor
+@onready var fireball: Node3D = $fireball
+@onready var element_label: Label = $UI/element_label
 
 # Shoot effect nodes (created dynamically)
 var shoot_debris: GPUParticles3D
@@ -46,9 +52,15 @@ var shatter_pieces: Array[RigidBody3D] = []
 var shatter_timer: float = 0.0
 const SHATTER_DISAPPEAR_TIME: float = 2.0
 
+# Fireball tracking
+var fireball_timer: float = 0.0
+const FIREBALL_TIMEOUT: float = 5.0
+const FIREBALL_SPEED: float = 30.0
+var fireball_velocity: Vector3 = Vector3.ZERO
+
 func _ready():
 	print("\n" + "=".repeat(60))
-	print("=== STONE LEVITATE VFX READY ===")
+	print("=== ELEMENTAL VFX READY ===")
 	print("=".repeat(60))
 	
 	if has_meta("generator_version"):
@@ -70,9 +82,18 @@ func _ready():
 		stone.body_entered.connect(_on_stone_body_entered)
 		print("  ✓ Stone collision monitoring enabled")
 	
+	# Hide fireball initially
+	if fireball:
+		fireball.visible = false
+		print("  ✓ Fireball ready (hidden)")
+	else:
+		print("  ⚠️ Fireball node not found - regenerate scene with generator script!")
+	
 	print("\n✓✓✓ READY!")
-	print("  - Click on FLOOR to spawn rock at that location")
-	print("  - Click again while hovering to SHOOT toward cursor!\n")
+	print("  - Press TAB to toggle between ROCK and FIRE")
+	print("  - Current element: ROCK")
+	print("  - ROCK: Click floor to spawn, click again to shoot")
+	print("  - FIRE: Click to launch fireball toward cursor\n")
 
 func _create_shoot_effects():
 	# Create debris burst - inspired by earth-bending reference
@@ -190,9 +211,120 @@ func _create_shoot_effects():
 	add_child(shoot_smoke)
 
 func _input(event):
+	# Toggle element with Tab key
+	if event is InputEventKey and event.pressed and event.keycode == KEY_TAB:
+		_toggle_element()
+		return
+	
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			_handle_click(event.position)
+			if current_element == Element.ROCK:
+				_handle_click(event.position)
+			else:
+				_handle_fire_click(event.position)
+
+
+func _toggle_element():
+	# Don't toggle while something is active
+	if current_state != State.IDLE and current_state != State.HIDDEN and current_state != State.SHATTERED:
+		print("  (Can't switch elements while in action)")
+		return
+	
+	# Clean up current state
+	if current_state == State.SHATTERED:
+		_cleanup_shatter_pieces()
+	
+	# Toggle
+	if current_element == Element.ROCK:
+		current_element = Element.FIRE
+		if element_label:
+			element_label.text = "🔥 FIRE"
+		print("\n🔥 Switched to FIRE element")
+		print("  - Click anywhere to launch fireball toward cursor")
+	else:
+		current_element = Element.ROCK
+		if element_label:
+			element_label.text = "🪨 ROCK"
+		print("\n🪨 Switched to ROCK element")
+		print("  - Click floor to spawn rock, click again to shoot")
+	
+	current_state = State.IDLE
+
+func _handle_fire_click(mouse_pos: Vector2):
+	# Fire mode: launch fireball from camera toward click target
+	if current_state == State.FIRE_FLYING:
+		print("  (Fireball already in flight)")
+		return
+	
+	if not fireball:
+		print("  ⚠️ ERROR: Fireball node not found! Regenerate scene.")
+		return
+	if not camera:
+		print("  ⚠️ ERROR: Camera not found!")
+		return
+	
+	# Get target position on floor (or far away if not hitting floor)
+	var target = _get_floor_target(mouse_pos)
+	if target == Vector3.ZERO:
+		# No floor hit, project far forward
+		var ray_origin = camera.project_ray_origin(mouse_pos)
+		var ray_dir = camera.project_ray_normal(mouse_pos)
+		target = ray_origin + ray_dir * 100.0
+	
+	# Spawn fireball in front of camera
+	var spawn_offset = Vector3(0, 0, -3)  # 3 units in front
+	var spawn_pos = camera.global_position + camera.global_transform.basis * spawn_offset
+	spawn_pos.y = maxf(spawn_pos.y, 1.0)  # Keep above ground
+	
+	fireball.global_position = spawn_pos
+	fireball.visible = true
+	
+	# Calculate direction to target
+	var direction = (target - spawn_pos).normalized()
+	fireball_velocity = direction * FIREBALL_SPEED
+	
+	# Rotate fireball to face movement direction
+	if direction.length() > 0.01:
+		fireball.look_at(spawn_pos + direction, Vector3.UP)
+	
+	# Start particles
+	_start_fireball_particles()
+	
+	current_state = State.FIRE_FLYING
+	fireball_timer = FIREBALL_TIMEOUT
+	
+	print("\n🔥 FIREBALL LAUNCHED!")
+	print("  From: ", spawn_pos)
+	print("  To: ", target)
+	print("  Direction: ", direction)
+
+
+func _start_fireball_particles():
+	if not fireball:
+		return
+	# Find and start particle systems
+	var fireball_mesh = fireball.get_node_or_null("fireball_mesh")
+	if fireball_mesh:
+		var spark_particles = fireball_mesh.get_node_or_null("spark_particles")
+		var smoke_particles = fireball_mesh.get_node_or_null("smoke_particles")
+		if spark_particles:
+			spark_particles.emitting = true
+		if smoke_particles:
+			smoke_particles.emitting = true
+
+
+func _stop_fireball_particles():
+	if not fireball:
+		return
+	var fireball_mesh = fireball.get_node_or_null("fireball_mesh")
+	if fireball_mesh:
+		var spark_particles = fireball_mesh.get_node_or_null("spark_particles")
+		var smoke_particles = fireball_mesh.get_node_or_null("smoke_particles")
+		if spark_particles:
+			spark_particles.emitting = false
+		if smoke_particles:
+			smoke_particles.emitting = false
+
 
 func _handle_click(mouse_pos: Vector2):
 	match current_state:
@@ -424,6 +556,16 @@ func _process(delta):
 		shatter_timer -= delta
 		if shatter_timer <= 0:
 			_cleanup_shatter_pieces()
+	
+	# Fireball movement (no physics, just translate)
+	if current_state == State.FIRE_FLYING and fireball:
+		fireball.global_position += fireball_velocity * delta
+		fireball_timer -= delta
+		
+		# Check if out of bounds or timeout
+		var pos = fireball.global_position
+		if fireball_timer <= 0 or pos.length() > 100.0 or pos.y < -5.0:
+			_hide_fireball()
 
 func _on_rock_landed():
 	if current_state == State.LANDED:
@@ -449,6 +591,15 @@ func _hide_everything():
 		shoot_smoke.visible = false
 	
 	print("  Hidden. Click on floor to spawn again!")
+
+
+func _hide_fireball():
+	if fireball:
+		fireball.visible = false
+		_stop_fireball_particles()
+	fireball_velocity = Vector3.ZERO
+	current_state = State.IDLE
+	print("  Fireball faded. Click to launch another!")
 
 
 func _on_stone_body_entered(body: Node):
