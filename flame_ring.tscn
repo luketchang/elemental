@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://deerj7p8rbdu2"]
 
-[ext_resource type="Script" uid="uid://ce2ba1dcurapg" path="res://scenes/flame_ring_test.gd" id="1_ku1xe"]
+[ext_resource type="Script" path="res://scenes/flame_ring_test.gd" id="1_ku1xe"]
 
 [node name="FlameRing" type="Node3D"]
 

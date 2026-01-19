@@ -60,7 +60,7 @@ var fireball_velocity: Vector3 = Vector3.ZERO
 
 # Fire impact flipbook
 var fire_impact_shader: Shader
-const FIRE_IMPACT_DURATION: float = 0.4
+const FIRE_IMPACT_DURATION: float = 0.25
 const FIRE_IMPACT_SIZE: float = 3.0
 
 func _ready():
