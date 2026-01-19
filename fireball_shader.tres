@@ -6,7 +6,7 @@
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_1r0j6"]
 gradient = SubResource("Gradient_584bc")
-fill_from = Vector2(0.942308, 0.782051)
+fill_from = Vector2(0.957778, 0.631111)
 fill_to = Vector2(0.957265, 1)
 
 [sub_resource type="VisualShaderNodeTexture" id="VisualShaderNodeTexture_lmwxe"]
@@ -101,6 +101,7 @@ void fragment() {
 
 }
 "
+graph_offset = Vector2(-276.862, 40.1754)
 modes/cull = 2
 flags/unshaded = true
 flags/shadows_disabled = true

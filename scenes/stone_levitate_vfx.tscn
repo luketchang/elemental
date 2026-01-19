@@ -1,4 +1,4 @@
-[gd_scene load_steps=67 format=4 uid="uid://banweavwralw5"]
+[gd_scene load_steps=67 format=4 uid="uid://cgbchns13wep5"]
 
 [ext_resource type="Script" uid="uid://dfy42gxrqjh1q" path="res://scenes/stone_levitate_controller.gd" id="1_k8gmc"]
 [ext_resource type="Texture2D" uid="uid://610r5q0bhxjy" path="res://assets/textures/T_rocks_A_color.png" id="2_fr3i0"]
@@ -391,8 +391,8 @@ ambient_light_energy = 0.5
 
 [node name="StoneLevitateVFX" type="Node3D"]
 script = ExtResource("1_k8gmc")
-metadata/generator_version = "v7.0"
-metadata/generated_at = "2025-12-27T09:28:27"
+metadata/generator_version = "v7.1"
+metadata/generated_at = "2025-12-27T14:06:22"
 metadata/physics_enabled = "true"
 metadata/stone_type = "RigidBody3D"
 metadata/debris_velocity = "5-7"
@@ -476,7 +476,7 @@ transform = Transform3D(0.866025, -0.25, 0.433013, 0, 0.866025, 0.5, -0.5, -0.43
 current = true
 
 [node name="wall_0" type="StaticBody3D" parent="."]
-transform = Transform3D(0.330023, 0, 0.943973, 0, 1, 0, -0.943973, 0, 0.330023, 11.906, 2, -1.10111)
+transform = Transform3D(0.0495138, 0, 0.998773, 0, 1, 0, -0.998773, 0, 0.0495138, 21.302, 2, 2.9068)
 collision_layer = 2
 
 [node name="mesh" type="MeshInstance3D" parent="wall_0"]
@@ -487,7 +487,7 @@ surface_material_override/0 = SubResource("StandardMaterial3D_1vfg3")
 shape = SubResource("BoxShape3D_f1an2")
 
 [node name="wall_1" type="StaticBody3D" parent="."]
-transform = Transform3D(-0.715711, 0, 0.698397, 0, 1, 0, -0.698397, 0, -0.715711, 12.5639, 2, 12.1772)
+transform = Transform3D(-0.383149, 0, 0.923686, 0, 1, 0, -0.923686, 0, -0.383149, 13.7389, 2, 10.1747)
 collision_layer = 2
 
 [node name="mesh" type="MeshInstance3D" parent="wall_1"]
@@ -498,7 +498,7 @@ surface_material_override/0 = SubResource("StandardMaterial3D_xgml4")
 shape = SubResource("BoxShape3D_qrb6s")
 
 [node name="wall_2" type="StaticBody3D" parent="."]
-transform = Transform3D(-0.991131, 0, -0.132892, 0, 1, 0, 0.132892, 0, -0.991131, 0.0837195, 2, 13.5439)
+transform = Transform3D(-0.978546, 0, -0.20603, 0, 1, 0, 0.20603, 0, -0.978546, -2.2533, 2, 21.8941)
 collision_layer = 2
 
 [node name="mesh" type="MeshInstance3D" parent="wall_2"]
@@ -509,7 +509,7 @@ surface_material_override/0 = SubResource("StandardMaterial3D_llmhn")
 shape = SubResource("BoxShape3D_e72x8")
 
 [node name="wall_3" type="StaticBody3D" parent="."]
-transform = Transform3D(-0.433649, 0, -0.901082, 0, 1, 0, 0.901082, 0, -0.433649, -14.9257, 2, 10.4296)
+transform = Transform3D(-0.905028, 0, -0.425352, 0, 1, 0, 0.425352, 0, -0.905028, -9.0047, 2, 10.5275)
 collision_layer = 2
 
 [node name="mesh" type="MeshInstance3D" parent="wall_3"]
@@ -520,7 +520,7 @@ surface_material_override/0 = SubResource("StandardMaterial3D_li24i")
 shape = SubResource("BoxShape3D_gb3lj")
 
 [node name="wall_4" type="StaticBody3D" parent="."]
-transform = Transform3D(-0.239552, 0, -0.970883, 0, 1, 0, 0.970883, 0, -0.239552, -15.4751, 2, 2.18409)
+transform = Transform3D(0.375718, 0, -0.926734, 0, 1, 0, 0.926734, 0, 0.375718, -14.2526, 2, -1.20306)
 collision_layer = 2
 
 [node name="mesh" type="MeshInstance3D" parent="wall_4"]
@@ -531,7 +531,7 @@ surface_material_override/0 = SubResource("StandardMaterial3D_6etiu")
 shape = SubResource("BoxShape3D_v0ift")
 
 [node name="wall_5" type="StaticBody3D" parent="."]
-transform = Transform3D(0.825923, 0, -0.563784, 0, 1, 0, 0.563784, 0, 0.825923, -11.7247, 2, -10.257)
+transform = Transform3D(0.777563, 0, -0.628805, 0, 1, 0, 0.628805, 0, 0.777563, -11.6365, 2, -10.8771)
 collision_layer = 2
 
 [node name="mesh" type="MeshInstance3D" parent="wall_5"]
@@ -542,7 +542,7 @@ surface_material_override/0 = SubResource("StandardMaterial3D_xyii0")
 shape = SubResource("BoxShape3D_ob6gm")
 
 [node name="wall_6" type="StaticBody3D" parent="."]
-transform = Transform3D(0.973817, 0, -0.227334, 0, 1, 0, 0.227334, 0, 0.973817, -1.27868, 2, -10.2316)
+transform = Transform3D(0.985574, 0, 0.169246, 0, 1, 0, -0.169246, 0, 0.985574, 0.244241, 2, -12.5712)
 collision_layer = 2
 
 [node name="mesh" type="MeshInstance3D" parent="wall_6"]
@@ -553,7 +553,7 @@ surface_material_override/0 = SubResource("StandardMaterial3D_bq5uy")
 shape = SubResource("BoxShape3D_0ceks")
 
 [node name="wall_7" type="StaticBody3D" parent="."]
-transform = Transform3D(0.796653, 0, 0.604437, 0, 1, 0, -0.604437, 0, 0.796653, 8.67557, 2, -5.94721)
+transform = Transform3D(0.663757, 0, 0.747948, 0, 1, 0, -0.747948, 0, 0.663757, 15.0396, 2, -16.3539)
 collision_layer = 2
 
 [node name="mesh" type="MeshInstance3D" parent="wall_7"]
@@ -580,7 +580,7 @@ mesh = SubResource("SphereMesh_fwrxu")
 [node name="spark_particles" type="GPUParticles3D" parent="fireball/fireball_mesh"]
 transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, -0.014, 0, -0.24)
 material_override = SubResource("StandardMaterial3D_m7unv")
-amount = 16
+amount = 100
 lifetime = 0.58
 process_material = SubResource("ParticleProcessMaterial_p02g7")
 draw_pass_1 = SubResource("SphereMesh_rigyt")
@@ -588,7 +588,7 @@ draw_pass_1 = SubResource("SphereMesh_rigyt")
 [node name="smoke_particles" type="GPUParticles3D" parent="fireball/fireball_mesh"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0.04, -0.27)
 material_override = SubResource("StandardMaterial3D_6xq03")
-amount = 80
+amount = 200
 lifetime = 1.57
 fixed_fps = 60
 process_material = SubResource("ParticleProcessMaterial_xegtn")

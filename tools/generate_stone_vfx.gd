@@ -1,7 +1,7 @@
 @tool
 extends EditorScript
 
-## Elemental VFX Generator (v7.0 - Rock + Fire)
+## Elemental VFX Generator (v7.1 - Rock + Fire)
 ## Run this script from: File -> Run (or Ctrl+Shift+X)
 ## Generates: res://scenes/stone_levitate_vfx.tscn
 ##
@@ -16,7 +16,7 @@ extends EditorScript
 func _run():
 	
 	print("\n\n=== GENERATING ELEMENTAL VFX SCENE ===")
-	print("🔧 GENERATOR VERSION: v7.0 - ROCK + FIRE ELEMENTS")
+	print("🔧 GENERATOR VERSION: v7.1 - ROCK + FIRE ELEMENTS")
 	print("Rock: RigidBody3D with levitate, hover, shoot, wall shatter")
 	print("Fire: Fireball with flame shader, sparks, smoke trail (pass-through walls)")
 	print("Toggle: Press Tab to switch between elements\n")
@@ -32,7 +32,7 @@ func _run():
 		root.set_script(script)
 		# Add version metadata to the root node
 		var timestamp = Time.get_datetime_string_from_system()
-		root.set_meta("generator_version", "v7.0")
+		root.set_meta("generator_version", "v7.1")
 		root.set_meta("generated_at", timestamp)
 		root.set_meta("physics_enabled", "true")
 		root.set_meta("stone_type", "RigidBody3D")
@@ -710,8 +710,8 @@ func _create_fireball() -> Node3D:
 	# === INNER GLOW SPHERE (fresnel shader) ===
 	var inner_glow = MeshInstance3D.new()
 	inner_glow.name = "inner_glow"
-	inner_glow.mesh = SphereMesh.new()
-	inner_glow.scale = Vector3(0.8, 0.8, 0.8)  # 1.6 * 0.5 base scale
+	inner_glow.mesh = SphereMesh.new()  # Default radius 0.5, height 1.0
+	inner_glow.scale = Vector3(1.6, 1.6, 1.6)  # Match fire_test.tscn transform
 	
 	var fresnel_shader = load("res://fire_header_shader.tres")
 	if fresnel_shader:
@@ -729,7 +729,7 @@ func _create_fireball() -> Node3D:
 	# === SPARK PARTICLES ===
 	var spark_particles = GPUParticles3D.new()
 	spark_particles.name = "spark_particles"
-	spark_particles.amount = 16
+	spark_particles.amount = 100
 	spark_particles.lifetime = 0.58
 	spark_particles.transform = Transform3D.IDENTITY.scaled(Vector3(0.8, 0.8, 0.8))  # 1.6 * 0.5
 	spark_particles.transform.origin = Vector3(-0.014, 0, -0.24)  # Adjusted for scale
@@ -773,7 +773,7 @@ func _create_fireball() -> Node3D:
 	# === SMOKE TRAIL PARTICLES ===
 	var smoke_particles = GPUParticles3D.new()
 	smoke_particles.name = "smoke_particles"
-	smoke_particles.amount = 80
+	smoke_particles.amount = 200
 	smoke_particles.lifetime = 1.57
 	smoke_particles.fixed_fps = 60
 	smoke_particles.transform.origin = Vector3(0.1, 0.04, -0.27)  # Adjusted for scale
