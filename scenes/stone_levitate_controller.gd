@@ -58,6 +58,11 @@ const FIREBALL_TIMEOUT: float = 5.0
 const FIREBALL_SPEED: float = 30.0
 var fireball_velocity: Vector3 = Vector3.ZERO
 
+# Fire impact flipbook
+var fire_impact_shader: Shader
+const FIRE_IMPACT_DURATION: float = 0.4
+const FIRE_IMPACT_SIZE: float = 3.0
+
 func _ready():
 	print("\n" + "=".repeat(60))
 	print("=== ELEMENTAL VFX READY ===")
@@ -88,6 +93,9 @@ func _ready():
 		print("  ✓ Fireball ready (hidden)")
 	else:
 		print("  ⚠️ Fireball node not found - regenerate scene with generator script!")
+	
+	# Create fire impact flipbook shader
+	_create_fire_impact_shader()
 	
 	print("\n✓✓✓ READY!")
 	print("  - Press TAB to toggle between ROCK and FIRE")
@@ -559,13 +567,31 @@ func _process(delta):
 	
 	# Fireball movement (no physics, just translate)
 	if current_state == State.FIRE_FLYING and fireball:
-		fireball.global_position += fireball_velocity * delta
-		fireball_timer -= delta
+		var move_delta = fireball_velocity * delta
 		
-		# Check if out of bounds or timeout
-		var pos = fireball.global_position
-		if fireball_timer <= 0 or pos.length() > 100.0 or pos.y < -5.0:
+		# Raycast to check for wall/floor collision
+		var space_state = get_world_3d().direct_space_state
+		var query = PhysicsRayQueryParameters3D.create(
+			fireball.global_position,
+			fireball.global_position + move_delta * 2.0  # Look ahead
+		)
+		query.collision_mask = 3  # Walls + floor
+		
+		var result = space_state.intersect_ray(query)
+		if result:
+			# Hit something! Spawn impact effect
+			print("🔥 FIREBALL IMPACT at ", result.position)
+			_spawn_fire_impact(result.position, result.normal)
 			_hide_fireball()
+		else:
+			# No collision, move normally
+			fireball.global_position += move_delta
+			fireball_timer -= delta
+			
+			# Check if out of bounds or timeout
+			var pos = fireball.global_position
+			if fireball_timer <= 0 or pos.length() > 100.0 or pos.y < -5.0:
+				_hide_fireball()
 
 func _on_rock_landed():
 	if current_state == State.LANDED:
@@ -600,6 +626,87 @@ func _hide_fireball():
 	fireball_velocity = Vector3.ZERO
 	current_state = State.IDLE
 	print("  Fireball faded. Click to launch another!")
+
+
+func _create_fire_impact_shader():
+	fire_impact_shader = Shader.new()
+	fire_impact_shader.code = """
+shader_type spatial;
+render_mode unshaded, blend_add, cull_disabled, depth_draw_never;
+
+uniform sampler2D flipbook_tex : source_color;
+uniform int rows = 2;
+uniform int cols = 2;
+uniform int current_frame = 0;
+uniform float intensity = 2.5;
+
+void fragment() {
+	float frame_width = 1.0 / float(cols);
+	float frame_height = 1.0 / float(rows);
+	
+	int col = current_frame % cols;
+	int row = current_frame / cols;
+	
+	vec2 frame_uv = vec2(
+		float(col) * frame_width + UV.x * frame_width,
+		float(row) * frame_height + UV.y * frame_height
+	);
+	
+	vec4 tex_color = texture(flipbook_tex, frame_uv);
+	float alpha = max(tex_color.r, max(tex_color.g, tex_color.b));
+	
+	ALBEDO = tex_color.rgb * intensity;
+	ALPHA = alpha;
+}
+"""
+	print("  ✓ Fire impact shader created")
+
+
+func _spawn_fire_impact(impact_pos: Vector3, impact_normal: Vector3):
+	# Create a quad mesh facing the camera (billboard)
+	var impact_node = Node3D.new()
+	impact_node.name = "fire_impact"
+	add_child(impact_node)
+	impact_node.global_position = impact_pos + impact_normal * 0.1  # Offset slightly from surface
+	
+	var mesh_instance = MeshInstance3D.new()
+	var quad = QuadMesh.new()
+	quad.size = Vector2(FIRE_IMPACT_SIZE, FIRE_IMPACT_SIZE)
+	mesh_instance.mesh = quad
+	impact_node.add_child(mesh_instance)
+	
+	# Create material
+	var mat = ShaderMaterial.new()
+	mat.shader = fire_impact_shader
+	
+	var flipbook_tex = load("res://assets/flipbooks/fire-impact.png")
+	if flipbook_tex:
+		mat.set_shader_parameter("flipbook_tex", flipbook_tex)
+	mat.set_shader_parameter("rows", 2)
+	mat.set_shader_parameter("cols", 2)
+	mat.set_shader_parameter("current_frame", 0)
+	mat.set_shader_parameter("intensity", 3.0)
+	
+	mesh_instance.material_override = mat
+	
+	# Make it face the camera by looking at camera
+	if camera:
+		impact_node.look_at(camera.global_position, Vector3.UP)
+	
+	# Animate the flipbook
+	_animate_fire_impact(impact_node, mat)
+
+
+func _animate_fire_impact(node: Node3D, mat: ShaderMaterial):
+	var total_frames = 4  # 2x2 flipbook
+	var frame_time = FIRE_IMPACT_DURATION / float(total_frames)
+	
+	for frame in range(total_frames):
+		mat.set_shader_parameter("current_frame", frame)
+		await get_tree().create_timer(frame_time).timeout
+	
+	# Cleanup
+	node.queue_free()
 
 
 func _on_stone_body_entered(body: Node):
