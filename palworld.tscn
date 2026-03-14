@@ -1,0 +1,136 @@
+[gd_scene load_steps=21 format=3 uid="uid://duhqvreiayxh8"]
+
+[ext_resource type="Texture2D" uid="uid://btbfsd5oxrjnt" path="res://materials/packed/mine_rock/packed_albedo_height.png" id="1_1x7x4"]
+[ext_resource type="Shader" uid="uid://rm4jn50s34rq" path="res://shaders/terrain_procedural.gdshader" id="1_edk3x"]
+[ext_resource type="Texture2D" uid="uid://bga4osrlatflp" path="res://materials/packed/mossy_forest/mossy_forest_packed_albedo_height.png" id="2_2n125"]
+[ext_resource type="Texture2D" uid="uid://n8hv4x147aog" path="res://materials/packed/mine_rock/packed_normal_roughness.png" id="2_edk3x"]
+[ext_resource type="Texture2D" uid="uid://d1ndntxmxwu1s" path="res://materials/packed/mossy_forest/mossy_forest_packed_normal_roughness.png" id="3_edk3x"]
+[ext_resource type="Texture2D" uid="uid://xevmlxdp7m50" path="res://materials/packed/soil_dirt/packed_albedo_height.png" id="6_xytm4"]
+[ext_resource type="Texture2D" uid="uid://bgpetwxruvob3" path="res://materials/packed/soil_dirt/packed_normal_roughness.png" id="7_8soxa"]
+[ext_resource type="Script" uid="uid://ci3ukmvoi8jds" path="res://gaea_river_debug.gd" id="8_8soxa"]
+[ext_resource type="Texture2D" uid="uid://xv4cxbhpq6yk" path="res://river_mask.png" id="9_a4q0l"]
+[ext_resource type="Texture2D" uid="uid://bseqp11xtyxrs" path="res://river_water_height.png" id="10_a4q0l"]
+
+[sub_resource type="Gradient" id="Gradient_edk3x"]
+offsets = PackedFloat32Array(0.2, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_pubvv"]
+noise_type = 2
+frequency = 0.03
+cellular_jitter = 3.0
+cellular_return_type = 0
+domain_warp_enabled = true
+domain_warp_type = 1
+domain_warp_amplitude = 50.0
+domain_warp_fractal_type = 2
+domain_warp_fractal_lacunarity = 1.5
+domain_warp_fractal_gain = 1.0
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_xytm4"]
+seamless = true
+color_ramp = SubResource("Gradient_edk3x")
+noise = SubResource("FastNoiseLite_pubvv")
+
+[sub_resource type="Terrain3DMaterial" id="Terrain3DMaterial_82xa0"]
+_shader_parameters = {
+&"bias_distance": 512.0,
+&"blend_noise_scale": 0.03,
+&"blend_noise_strength": 0.1,
+&"blend_sharpness": 0.5,
+&"depth_blur": 0.0,
+&"dirt_amount": 0.0,
+&"dirt_height_max": 120.0,
+&"dirt_height_min": 5.0,
+&"dirt_noise_scale": 0.004,
+&"dirt_noise_threshold": 0.5,
+&"dirt_slope_max": 0.08,
+&"enable_macro_variation": true,
+&"enable_procedural": true,
+&"enable_projection": true,
+&"flat_terrain_normals": false,
+&"macro_variation1": Color(1, 1, 1, 1),
+&"macro_variation2": Color(1, 1, 1, 1),
+&"macro_variation_slope": 0.333,
+&"mipmap_bias": 1.0,
+&"noise1_angle": 0.0,
+&"noise1_offset": Vector2(0.5, 0.5),
+&"noise1_scale": 0.04,
+&"noise2_scale": 0.076,
+&"noise_texture": SubResource("NoiseTexture2D_xytm4"),
+&"proc_dirt_id": 2,
+&"proc_grass_id": 0,
+&"proc_rock_id": 1,
+&"projection_threshold": 0.8,
+&"slope_blend_width": 0.1,
+&"slope_threshold": 0.1
+}
+shader_override_enabled = true
+shader_override = ExtResource("1_edk3x")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_a4q0l"]
+transparency = 4
+cull_mode = 2
+vertex_color_use_as_albedo = true
+backlight_enabled = true
+backlight = Color(0.5, 0.5, 0.5, 1)
+distance_fade_mode = 1
+distance_fade_min_distance = 128.0
+distance_fade_max_distance = 96.0
+
+[sub_resource type="Terrain3DMeshAsset" id="Terrain3DMeshAsset_3df68"]
+generated_type = 1
+height_offset = 0.5
+material_override = SubResource("StandardMaterial3D_a4q0l")
+last_lod = 0
+last_shadow_lod = 0
+lod0_range = 128.0
+
+[sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_ng4yb"]
+name = "mossy_forest_packed_albedo_height"
+albedo_texture = ExtResource("2_2n125")
+normal_texture = ExtResource("3_edk3x")
+detiling_rotation = 0.28
+detiling_shift = 0.294
+
+[sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_mm1q2"]
+name = "packed_albedo_height"
+id = 1
+albedo_texture = ExtResource("1_1x7x4")
+normal_texture = ExtResource("2_edk3x")
+normal_depth = 0.617
+ao_strength = 0.643
+roughness = 0.233
+detiling_rotation = 0.251
+detiling_shift = 0.161
+
+[sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_xytm4"]
+name = "packed_albedo_height"
+id = 2
+albedo_texture = ExtResource("6_xytm4")
+normal_texture = ExtResource("7_8soxa")
+
+[sub_resource type="Terrain3DAssets" id="Terrain3DAssets_hken5"]
+mesh_list = Array[Terrain3DMeshAsset]([SubResource("Terrain3DMeshAsset_3df68")])
+texture_list = Array[Terrain3DTextureAsset]([SubResource("Terrain3DTextureAsset_ng4yb"), SubResource("Terrain3DTextureAsset_mm1q2"), SubResource("Terrain3DTextureAsset_xytm4")])
+
+[node name="Palworld" type="Node2D"]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.507538, 0.647311, -0.568677, 0, 0.660002, 0.751264, 0.861629, -0.381295, 0.334976, 0, 924.433, 0)
+light_energy = 1.303
+
+[node name="Terrain3D" type="Terrain3D" parent="."]
+data_directory = "res://terrain_out/palworld"
+material = SubResource("Terrain3DMaterial_82xa0")
+assets = SubResource("Terrain3DAssets_hken5")
+top_level = true
+metadata/_edit_lock_ = true
+
+[node name="RiverWater" type="Node3D" parent="."]
+script = ExtResource("8_8soxa")
+river_mask_texture = ExtResource("9_a4q0l")
+river_height_texture = ExtResource("10_a4q0l")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.116671, 0.993171, 0, -0.993171, 0.116671, 512, 300, 512)

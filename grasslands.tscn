@@ -1,0 +1,110 @@
+[gd_scene load_steps=17 format=3 uid="uid://cotehsy3f2p4a"]
+
+[ext_resource type="Texture2D" uid="uid://bef4tflrcufiu" path="res://materials/packed/wild_grass/wild_grass_packed_albedo_height.png" id="1_ovg1w"]
+[ext_resource type="Texture2D" uid="uid://c5nxlvydkiqcm" path="res://materials/packed/wild_grass/wild_grass_packed_normal_roughness.png" id="2_kubk6"]
+[ext_resource type="Texture2D" uid="uid://bmmvpgbfvyqix" path="res://materials/packed/mossy_grass/packed_mossy_grass_height.png" id="2_ovg1w"]
+[ext_resource type="Texture2D" uid="uid://wmkfrqitlbge" path="res://materials/packed/mossy_grass/packed_mossy_grass_roughness.png" id="3_kubk6"]
+
+[sub_resource type="Gradient" id="Gradient_bdyq4"]
+offsets = PackedFloat32Array(0.2, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_mclyy"]
+noise_type = 2
+frequency = 0.03
+cellular_jitter = 3.0
+cellular_return_type = 0
+domain_warp_enabled = true
+domain_warp_type = 1
+domain_warp_amplitude = 50.0
+domain_warp_fractal_type = 2
+domain_warp_fractal_lacunarity = 1.5
+domain_warp_fractal_gain = 1.0
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_xbb84"]
+seamless = true
+color_ramp = SubResource("Gradient_bdyq4")
+noise = SubResource("FastNoiseLite_mclyy")
+
+[sub_resource type="Terrain3DMaterial" id="Terrain3DMaterial_2nsc2"]
+_shader_parameters = {
+&"bias_distance": 512.0,
+&"blend_sharpness": 0.5,
+&"depth_blur": 0.0,
+&"enable_macro_variation": true,
+&"enable_projection": true,
+&"flat_terrain_normals": false,
+&"macro_variation1": Color(1, 1, 1, 1),
+&"macro_variation2": Color(1, 1, 1, 1),
+&"macro_variation_slope": 0.333,
+&"mipmap_bias": 1.0,
+&"noise1_angle": 0.0,
+&"noise1_offset": Vector2(0.5, 0.5),
+&"noise1_scale": 0.04,
+&"noise2_scale": 0.076,
+&"noise_texture": SubResource("NoiseTexture2D_xbb84"),
+&"projection_threshold": 0.8
+}
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vd8w7"]
+transparency = 4
+cull_mode = 2
+vertex_color_use_as_albedo = true
+backlight_enabled = true
+backlight = Color(0.5, 0.5, 0.5, 1)
+distance_fade_mode = 1
+distance_fade_min_distance = 128.0
+distance_fade_max_distance = 96.0
+
+[sub_resource type="Terrain3DMeshAsset" id="Terrain3DMeshAsset_kl5ql"]
+generated_type = 1
+height_offset = 0.5
+material_override = SubResource("StandardMaterial3D_vd8w7")
+last_lod = 0
+last_shadow_lod = 0
+lod0_range = 128.0
+
+[sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_a1n65"]
+name = "wild_grass_packed_albedo_height"
+albedo_texture = ExtResource("1_ovg1w")
+normal_texture = ExtResource("2_kubk6")
+uv_scale = 0.059
+detiling_rotation = 0.488
+detiling_shift = 0.5
+
+[sub_resource type="Terrain3DTextureAsset" id="Terrain3DTextureAsset_5ygru"]
+name = "packed_mossy_grass_height"
+id = 1
+albedo_texture = ExtResource("2_ovg1w")
+normal_texture = ExtResource("3_kubk6")
+
+[sub_resource type="Terrain3DAssets" id="Terrain3DAssets_wsxec"]
+mesh_list = Array[Terrain3DMeshAsset]([SubResource("Terrain3DMeshAsset_kl5ql")])
+texture_list = Array[Terrain3DTextureAsset]([SubResource("Terrain3DTextureAsset_a1n65"), SubResource("Terrain3DTextureAsset_5ygru")])
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ovg1w"]
+
+[sub_resource type="Sky" id="Sky_kubk6"]
+sky_material = SubResource("ProceduralSkyMaterial_ovg1w")
+
+[sub_resource type="Environment" id="Environment_vd8w7"]
+background_mode = 2
+sky = SubResource("Sky_kubk6")
+
+[node name="World_tscn" type="Node3D"]
+
+[node name="Terrain3D" type="Terrain3D" parent="."]
+data_directory = "res://terrain_out/grasslands"
+material = SubResource("Terrain3DMaterial_2nsc2")
+assets = SubResource("Terrain3DAssets_wsxec")
+top_level = true
+metadata/_edit_lock_ = true
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.995562, -0.0346436, 0.0874997, 0, 0.929776, 0.368125, -0.0941083, -0.366491, 0.92565, 666.55, 1184.59, 776.918)
+light_energy = 6.285
+light_volumetric_fog_energy = 2.0
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_vd8w7")
