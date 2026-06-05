@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://duhqvreiayxh8"]
+[gd_scene load_steps=18 format=4 uid="uid://duhqvreiayxh8"]
 
 [ext_resource type="Texture2D" uid="uid://btbfsd5oxrjnt" path="res://materials/packed/mine_rock/packed_albedo_height.png" id="1_1x7x4"]
 [ext_resource type="Shader" uid="uid://rm4jn50s34rq" path="res://shaders/terrain_procedural.gdshader" id="1_edk3x"]
@@ -7,10 +7,6 @@
 [ext_resource type="Texture2D" uid="uid://d1ndntxmxwu1s" path="res://materials/packed/mossy_forest/mossy_forest_packed_normal_roughness.png" id="3_edk3x"]
 [ext_resource type="Texture2D" uid="uid://xevmlxdp7m50" path="res://materials/packed/soil_dirt/packed_albedo_height.png" id="6_xytm4"]
 [ext_resource type="Texture2D" uid="uid://bgpetwxruvob3" path="res://materials/packed/soil_dirt/packed_normal_roughness.png" id="7_8soxa"]
-[ext_resource type="Script" uid="uid://ci3ukmvoi8jds" path="res://gaea_river_debug.gd" id="8_8soxa"]
-[ext_resource type="Texture2D" uid="uid://xv4cxbhpq6yk" path="res://river_mask.png" id="9_a4q0l"]
-[ext_resource type="Texture2D" uid="uid://bseqp11xtyxrs" path="res://river_water_height.png" id="10_a4q0l"]
-
 [sub_resource type="Gradient" id="Gradient_edk3x"]
 offsets = PackedFloat32Array(0.2, 1)
 colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
@@ -127,10 +123,6 @@ assets = SubResource("Terrain3DAssets_hken5")
 top_level = true
 metadata/_edit_lock_ = true
 
-[node name="RiverWater" type="Node3D" parent="."]
-script = ExtResource("8_8soxa")
-river_mask_texture = ExtResource("9_a4q0l")
-river_height_texture = ExtResource("10_a4q0l")
-
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.116671, 0.993171, 0, -0.993171, 0.116671, 512, 300, 512)
+
