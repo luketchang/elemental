@@ -7,6 +7,9 @@ extends CharacterBody3D
 
 @export var move_speed: float = 4.0
 @export var sprint_multiplier: float = 2.5
+## Ground speed (m/s) the walk clip is authored for. The walk plays faster/slower
+## so the feet match actual travel instead of sliding. Lower if feet still skate.
+@export var walk_anim_speed: float = 1.4
 @export var gravity: float = 30.0
 @export var jump_velocity: float = 12.0
 @export var mouse_sensitivity: float = 0.003
@@ -23,6 +26,7 @@ var _pitch: float = 0.0
 
 
 func _ready() -> void:
+	add_to_group("player")
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	# Stop the spring arm from colliding with our own body.
 	_spring_arm.add_excluded_object(get_rid())
@@ -140,6 +144,9 @@ func _update_animation(delta: float) -> void:
 	if horizontal.length() > 0.1:
 		if _anim.current_animation != "Walking/mixamo_com":
 			_anim.play("Walking/mixamo_com")
+		# Match walk playback to ground speed so the feet grip instead of sliding
+		# (also speeds the legs up when sprinting).
+		_anim.speed_scale = maxf(horizontal.length() / walk_anim_speed, 0.1)
 		# This mannequin's mesh faces +Z (Mixamo default), not Godot's -Z, so we
 		# aim +Z at the travel direction. Rotate only the mannequin so the camera
 		# rig stays under mouse control.
@@ -147,3 +154,4 @@ func _update_animation(delta: float) -> void:
 		_mannequin.rotation.y = lerp_angle(_mannequin.rotation.y, target_yaw, turn_speed * delta)
 	elif _anim.current_animation != "mixamo_com":
 		_anim.play("mixamo_com")
+		_anim.speed_scale = 1.0
