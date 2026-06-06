@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://tbifjrvnes0b"]
+
+[ext_resource type="PackedScene" uid="uid://bhmkmnhdk8v88" path="res://assets/models/character.glb" id="1_agfs1"]
+
+[node name="PlayerSkin" instance=ExtResource("1_agfs1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.103129, -0.0123057, 2.38419e-07)

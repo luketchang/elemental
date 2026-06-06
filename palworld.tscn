@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=4 uid="uid://duhqvreiayxh8"]
+[gd_scene load_steps=19 format=3 uid="uid://duhqvreiayxh8"]
 
 [ext_resource type="Texture2D" uid="uid://btbfsd5oxrjnt" path="res://materials/packed/mine_rock/packed_albedo_height.png" id="1_1x7x4"]
 [ext_resource type="Shader" uid="uid://rm4jn50s34rq" path="res://shaders/terrain_procedural.gdshader" id="1_edk3x"]
@@ -7,6 +7,8 @@
 [ext_resource type="Texture2D" uid="uid://d1ndntxmxwu1s" path="res://materials/packed/mossy_forest/mossy_forest_packed_normal_roughness.png" id="3_edk3x"]
 [ext_resource type="Texture2D" uid="uid://xevmlxdp7m50" path="res://materials/packed/soil_dirt/packed_albedo_height.png" id="6_xytm4"]
 [ext_resource type="Texture2D" uid="uid://bgpetwxruvob3" path="res://materials/packed/soil_dirt/packed_normal_roughness.png" id="7_8soxa"]
+[ext_resource type="PackedScene" uid="uid://cu1cceyojiw3v" path="res://scenes/player.tscn" id="player_pill"]
+
 [sub_resource type="Gradient" id="Gradient_edk3x"]
 offsets = PackedFloat32Array(0.2, 1)
 colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
@@ -114,7 +116,7 @@ texture_list = Array[Terrain3DTextureAsset]([SubResource("Terrain3DTextureAsset_
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.507538, 0.647311, -0.568677, 0, 0.660002, 0.751264, 0.861629, -0.381295, 0.334976, 0, 924.433, 0)
-light_energy = 1.303
+light_energy = 2.932
 
 [node name="Terrain3D" type="Terrain3D" parent="."]
 data_directory = "res://terrain_out/palworld"
@@ -123,6 +125,5 @@ assets = SubResource("Terrain3DAssets_hken5")
 top_level = true
 metadata/_edit_lock_ = true
 
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.116671, 0.993171, 0, -0.993171, 0.116671, 512, 300, 512)
-
+[node name="Player" parent="." instance=ExtResource("player_pill")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 512, 320, 512)
