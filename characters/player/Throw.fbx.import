@@ -1,15 +1,15 @@
 [remap]
 
-importer="scene"
+importer="animation_library"
 importer_version=1
-type="PackedScene"
+type="AnimationLibrary"
 uid="uid://0gmc07shen3j"
-path="res://.godot/imported/Throw.fbx-fe067ac4edd99401d04d66b79c39fa9c.scn"
+path="res://.godot/imported/Throw.fbx-fe067ac4edd99401d04d66b79c39fa9c.res"
 
 [deps]
 
 source_file="res://characters/player/Throw.fbx"
-dest_files=["res://.godot/imported/Throw.fbx-fe067ac4edd99401d04d66b79c39fa9c.scn"]
+dest_files=["res://.godot/imported/Throw.fbx-fe067ac4edd99401d04d66b79c39fa9c.res"]
 
 [params]
 

@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://duhqvreiayxh8"]
+[gd_scene load_steps=23 format=3 uid="uid://duhqvreiayxh8"]
 
 [ext_resource type="Texture2D" uid="uid://btbfsd5oxrjnt" path="res://materials/packed/mine_rock/packed_albedo_height.png" id="1_1x7x4"]
 [ext_resource type="Shader" uid="uid://rm4jn50s34rq" path="res://shaders/terrain_procedural.gdshader" id="1_edk3x"]
@@ -9,6 +9,17 @@
 [ext_resource type="Texture2D" uid="uid://bgpetwxruvob3" path="res://materials/packed/soil_dirt/packed_normal_roughness.png" id="7_8soxa"]
 [ext_resource type="PackedScene" uid="uid://cev33npcwndr1" path="res://scenes/eevee.tscn" id="eevee_npc"]
 [ext_resource type="PackedScene" uid="uid://cu1cceyojiw3v" path="res://scenes/player.tscn" id="player_pill"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sky"]
+
+[sub_resource type="Sky" id="Sky_sky"]
+sky_material = SubResource("ProceduralSkyMaterial_sky")
+
+[sub_resource type="Environment" id="Environment_sky"]
+background_mode = 2
+sky = SubResource("Sky_sky")
+ambient_light_source = 3
+tonemap_mode = 2
 
 [sub_resource type="Gradient" id="Gradient_edk3x"]
 offsets = PackedFloat32Array(0.2, 1)
@@ -114,6 +125,9 @@ mesh_list = Array[Terrain3DMeshAsset]([SubResource("Terrain3DMeshAsset_3df68")])
 texture_list = Array[Terrain3DTextureAsset]([SubResource("Terrain3DTextureAsset_ng4yb"), SubResource("Terrain3DTextureAsset_mm1q2"), SubResource("Terrain3DTextureAsset_xytm4")])
 
 [node name="Palworld" type="Node2D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_sky")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.507538, 0.860112, -0.0511001, 0, 0.0593063, 0.99824, 0.861629, -0.506645, 0.0301002, 0, 924.433, 0)
