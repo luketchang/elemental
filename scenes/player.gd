@@ -38,11 +38,53 @@ func _ready() -> void:
 		if _anim.has_animation(clip):
 			_anim.get_animation(clip).loop_mode = Animation.LOOP_LINEAR
 	# The Mixamo walk travels forward (motion baked into the hips), so the mesh
-	# drifts then snaps back each loop. Extract that hips motion as root motion
-	# and leave it unconsumed: the legs animate in place while the body is moved
-	# by velocity instead.
-	_anim.root_motion_track = NodePath("Skeleton3D:mixamorig1_Hips")
+	# drifts then snaps back each loop. Lock the hips' horizontal translation on
+	# the walk clip so it cycles in place; the body is moved by velocity instead.
+	# (Root-motion extraction would do this too, but it's global and also strips
+	# the idle's hip rotation, which makes the character lean.)
+	_lock_walk_in_place()
 	_anim.play("mixamo_com")
+
+	_align_feet_to_ground()
+
+
+func _lock_walk_in_place() -> void:
+	# Pin the hips' X/Z to their first-frame value so the walk doesn't travel
+	# forward (which caused drift + a snap-back at each loop). Keep Y so the
+	# vertical step bob is preserved. Idle is left alone.
+	var anim: Animation = _anim.get_animation("Walking/mixamo_com")
+	if anim == null:
+		return
+	var track: int = anim.find_track(NodePath("Skeleton3D:mixamorig1_Hips"), Animation.TYPE_POSITION_3D)
+	if track < 0:
+		return
+	var key_count: int = anim.track_get_key_count(track)
+	if key_count == 0:
+		return
+	var base: Vector3 = anim.track_get_key_value(track, 0)
+	for k in key_count:
+		var v: Vector3 = anim.track_get_key_value(track, k)
+		anim.track_set_key_value(track, k, Vector3(base.x, v.y, base.z))
+
+
+func _align_feet_to_ground() -> void:
+	# The collider's base sits at the body origin (y=0), which is where the feet
+	# should rest. Mixamo's mesh origin isn't exactly at the soles, so the
+	# character floats (or sinks). Find the mesh's lowest point and shift the
+	# mannequin so that point lines up with the body origin / ground.
+	var lowest: float = INF
+	var stack: Array[Node] = [_mannequin]
+	while not stack.is_empty():
+		var node: Node = stack.pop_back()
+		if node is VisualInstance3D:
+			var aabb: AABB = (node as VisualInstance3D).get_aabb()
+			var to_mannequin: Transform3D = _mannequin.global_transform.affine_inverse() * (node as Node3D).global_transform
+			for i in 8:
+				lowest = minf(lowest, (to_mannequin * aabb.get_endpoint(i)).y)
+		for child in node.get_children():
+			stack.push_back(child)
+	if lowest != INF:
+		_mannequin.position.y -= lowest
 
 
 func _unhandled_input(event: InputEvent) -> void:

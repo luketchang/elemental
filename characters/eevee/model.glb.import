@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://vd6imvso31b5"
-path="res://.godot/imported/eevee_rigready_25k.glb-c62f45785b06f59f9039217089eb85ca.scn"
+uid="uid://u6oj52smgqyt"
+path="res://.godot/imported/model.glb-f54fb9365fadc9bfa5c02e9fbe9b45ba.scn"
 
 [deps]
 
-source_file="res://characters/eevee/eevee_rigready_25k.glb"
-dest_files=["res://.godot/imported/eevee_rigready_25k.glb-c62f45785b06f59f9039217089eb85ca.scn"]
+source_file="res://characters/eevee/model.glb"
+dest_files=["res://.godot/imported/model.glb-f54fb9365fadc9bfa5c02e9fbe9b45ba.scn"]
 
 [params]
 
