@@ -43,6 +43,7 @@ extends CharacterBody3D
 @onready var _camera: Camera3D = $CamYaw/SpringArm3D/Camera3D
 
 const POKEBALL_SCENE: PackedScene = preload("res://scenes/pokeball.tscn")
+const CAPTURE_BALL_SCENE: PackedScene = preload("res://scenes/capture_ball.tscn")
 const THROW_ANIM: String = "Throw/mixamo_com"
 
 enum State { NORMAL, AIMING, THROWING }
@@ -50,6 +51,7 @@ enum State { NORMAL, AIMING, THROWING }
 var _pitch: float = 0.0
 var _state: int = State.NORMAL
 var _ball_thrown: bool = false
+var _pending_capture: bool = false
 var _dots: Array[MeshInstance3D] = []
 var _trajectory_root: Node3D
 var _landing_ring: MeshInstance3D
@@ -140,6 +142,9 @@ func _unhandled_input(event: InputEvent) -> void:
 			_enter_aiming()
 		elif _state == State.AIMING:
 			_cancel_aiming()
+	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_E:
+		if _state == State.NORMAL:
+			_start_capture_throw()
 	elif event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_LEFT and _state == State.AIMING:
 			_start_throw()
@@ -287,6 +292,20 @@ func _hold_windup() -> void:
 		_anim.speed_scale = 0.0
 
 
+func _start_capture_throw() -> void:
+	# E: immediate throw (no aiming) of a capture ball that spawns an Eevee on land.
+	_state = State.THROWING
+	_pending_capture = true
+	_ball_thrown = false
+	if _anim.has_animation(THROW_ANIM):
+		_anim.speed_scale = 1.0
+		_anim.play(THROW_ANIM)
+	else:
+		_spawn_ball()
+		_ball_thrown = true
+		_end_throw()
+
+
 func _start_throw() -> void:
 	_state = State.THROWING
 	_hide_trajectory()
@@ -359,7 +378,8 @@ func _throw_origin() -> Vector3:
 
 
 func _spawn_ball() -> void:
-	var ball := POKEBALL_SCENE.instantiate() as RigidBody3D
+	var scene: PackedScene = CAPTURE_BALL_SCENE if _pending_capture else POKEBALL_SCENE
+	var ball := scene.instantiate() as RigidBody3D
 	get_tree().current_scene.add_child(ball)
 	var dir: Vector3 = _aim_direction()
 	ball.global_position = _throw_origin() + dir * throw_forward
@@ -369,6 +389,7 @@ func _spawn_ball() -> void:
 	ball.linear_damp = 0.0
 	ball.add_collision_exception_with(self)
 	ball.linear_velocity = dir * throw_speed
+	_pending_capture = false
 
 
 func _update_trajectory() -> void:

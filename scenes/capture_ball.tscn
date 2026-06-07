@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=3 uid="uid://ccaptureball01"]
+
+[ext_resource type="PackedScene" uid="uid://cj8pjy1066csh" path="res://assets/models/pokeball.glb" id="1_ball"]
+[ext_resource type="Script" path="res://scenes/capture_ball.gd" id="2_cap"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_cap"]
+radius = 1.35
+
+[node name="CaptureBall" type="RigidBody3D"]
+continuous_cd = true
+script = ExtResource("2_cap")
+
+[node name="Model" parent="." instance=ExtResource("1_ball")]
+transform = Transform3D(0.0135, 0, 0, 0, 0.0135, 0, 0, 0, 0.0135, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_cap")
